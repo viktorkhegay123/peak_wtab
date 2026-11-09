@@ -345,7 +345,7 @@ body:not([data-gate="ok"]) .strip{display:none}
 body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!important}
 #login{margin-bottom:18px;border:2px solid var(--accent)!important}
 #login[hidden]{display:none}
-.loginform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.loginform{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px}
 @media (max-width:640px){.loginform{grid-template-columns:minmax(0,1fr)}}
 .loginform input{font-size:16px}
 .gbtn{margin-top:10px}
@@ -363,11 +363,14 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
   <section class="box reg" id="login" hidden>
     <img class="reg-photo" src="photos/04.jpg" alt="" onerror="this.remove()">
     <h2>Вход в штаб команды</h2>
-    <p>Введите почту, мы отправим ссылку для входа. Пароль не нужен. Вы входите один раз, дальше сайт вас помнит.</p>
+    <p>Первый раз: введите почту, придумайте пароль (от 6 символов) и нажмите «Создать аккаунт». Потом просто «Войти». Сайт запоминает вас на этом устройстве.</p>
     <form class="loginform" id="f-login">
       <input id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="you@gmail.com" aria-label="Почта" required>
-      <button class="btn" id="login-btn" type="submit">Получить ссылку</button>
+      <input id="login-pass" type="password" autocomplete="current-password" minlength="6" placeholder="Пароль" aria-label="Пароль" required>
+      <button class="btn" id="login-btn" type="submit">Войти</button>
     </form>
+    <button class="btn ghost gbtn" id="login-signup" type="button">Создать аккаунт</button>
+    <button class="linkbtn" id="login-link" type="button" style="margin-left:12px">Войти по ссылке из письма</button>
     <button class="btn ghost gbtn" id="login-google" type="button" hidden>Войти через Google</button>
     <div class="reg-note" id="login-msg"></div>
   </section>
@@ -497,7 +500,7 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
 <input type="file" id="vid-file" accept="video/*" hidden>
 
 <script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -1158,15 +1161,36 @@ $('#m-fill').addEventListener('click',function(){
 })();
 
 /* ---------- вход ---------- */
+function loginMsg(t,warn){var m=$('#login-msg');m.className='reg-note'+(warn?' warn':'');m.textContent=t}
+function authErr(err){var t=(err&&err.message)||'ошибка';
+  if(/invalid login/i.test(t))return 'Неверная почта или пароль. Если вы здесь впервые, нажмите «Создать аккаунт».';
+  if(/already registered|already been registered/i.test(t))return 'Такая почта уже зарегистрирована. Введите пароль и нажмите «Войти».';
+  if(/at least|weak|short/i.test(t))return 'Пароль слишком короткий: нужно минимум 6 символов.';
+  if(/not confirmed/i.test(t))return 'Почта не подтверждена. Администратору нужно выключить «Confirm email» в Supabase.';
+  if(/rate limit|after \d+ seconds/i.test(t))return 'Слишком много попыток. Подождите минуту.';
+  return 'Не получилось: '+t}
+function loginVals(){return {em:$('#login-email').value.trim(),pw:$('#login-pass').value}}
 $('#f-login').addEventListener('submit',async function(e){
-  e.preventDefault();var em=$('#login-email').value.trim(),b=$('#login-btn'),m=$('#login-msg');
-  if(!em||!sb)return;b.disabled=true;m.className='reg-note';m.textContent='Отправляю…';
-  try{
-    var r=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+location.pathname}});
+  e.preventDefault();var v=loginVals();if(!v.em||!v.pw||!sb)return;
+  var b=$('#login-btn');b.disabled=true;loginMsg('Вхожу…');
+  try{var r=await sb.auth.signInWithPassword({email:v.em,password:v.pw});if(r.error)throw r.error}
+  catch(err){loginMsg(authErr(err))}finally{b.disabled=false}
+});
+$('#login-signup').addEventListener('click',async function(){
+  var v=loginVals();if(!v.em||!sb){loginMsg('Введите почту и пароль.');return}
+  if(v.pw.length<6){loginMsg('Пароль слишком короткий: нужно минимум 6 символов.');return}
+  var b=this;b.disabled=true;loginMsg('Создаю аккаунт…');
+  try{var r=await sb.auth.signUp({email:v.em,password:v.pw,options:{emailRedirectTo:location.origin+location.pathname}});
     if(r.error)throw r.error;
-    m.className='reg-note warn';m.textContent='Письмо отправлено на '+em+'. Откройте ссылку из письма в этом же браузере. Если письма нет, проверьте «Спам».';
-  }catch(err){m.className='reg-note';m.textContent='Не получилось отправить письмо: '+((err&&err.message)||'ошибка')}
-  finally{b.disabled=false}
+    if(!r.data||!r.data.session){loginMsg('Аккаунт создан, но Supabase просит подтвердить почту. Откройте письмо или отключите «Confirm email» в настройках.',true)}
+  }catch(err){loginMsg(authErr(err))}finally{b.disabled=false}
+});
+$('#login-link').addEventListener('click',async function(){
+  var v=loginVals();if(!v.em||!sb){loginMsg('Введите почту.');return}
+  loginMsg('Отправляю…');
+  try{var r=await sb.auth.signInWithOtp({email:v.em,options:{emailRedirectTo:location.origin+location.pathname}});if(r.error)throw r.error;
+    loginMsg('Письмо отправлено на '+v.em+'. Откройте ссылку в этом же браузере.',true)}
+  catch(err){loginMsg(authErr(err))}
 });
 $('#login-google').addEventListener('click',function(){if(sb)sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})});
 
