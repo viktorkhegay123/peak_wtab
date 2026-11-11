@@ -349,6 +349,8 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
 @media (max-width:640px){.loginform{grid-template-columns:minmax(0,1fr)}}
 .loginform input{font-size:16px}
 .gbtn{margin-top:10px}
+.chk{display:block;margin:10px 0 0;font-size:14px;color:var(--muted)}
+.chk input{margin-right:6px}
 </style>
 </head>
 <body>
@@ -359,16 +361,26 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
     <section class="countdown" id="cd" aria-live="polite"></section>
   </header></div>
   <div id="banner" class="banner" hidden></div>
+  <section class="box" id="pw-box" hidden>
+    <h2>Сменить пароль</h2>
+    <form class="loginform" id="f-pw" style="grid-template-columns:minmax(0,1fr) auto auto">
+      <input id="pw-new" type="text" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="6" placeholder="Новый пароль (от 6 символов)" aria-label="Новый пароль" required>
+      <button class="btn" type="submit">Сохранить</button>
+      <button class="btn ghost" type="button" id="pw-cancel">Отмена</button>
+    </form>
+    <div class="reg-note" id="pw-msg"></div>
+  </section>
   <div id="gate-load">Загружаю…</div>
   <section class="box reg" id="login" hidden>
     <img class="reg-photo" src="photos/04.jpg" alt="" onerror="this.remove()">
     <h2>Вход в штаб команды</h2>
     <p>Первый раз: введите почту, придумайте пароль (от 6 символов) и нажмите «Создать аккаунт». Потом просто «Войти». Сайт запоминает вас на этом устройстве.</p>
     <form class="loginform" id="f-login">
-      <input id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="you@gmail.com" aria-label="Почта" required>
-      <input id="login-pass" type="password" autocomplete="current-password" minlength="6" placeholder="Пароль" aria-label="Пароль" required>
+      <input id="login-email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@gmail.com" aria-label="Почта" required>
+      <input id="login-pass" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="6" placeholder="Пароль" aria-label="Пароль" required>
       <button class="btn" id="login-btn" type="submit">Войти</button>
     </form>
+    <label class="chk"><input type="checkbox" id="login-show"> Показать пароль</label>
     <button class="btn ghost gbtn" id="login-signup" type="button">Создать аккаунт</button>
     <button class="linkbtn" id="login-link" type="button" style="margin-left:12px">Войти по ссылке из письма</button>
     <button class="btn ghost gbtn" id="login-google" type="button" hidden>Войти через Google</button>
@@ -942,7 +954,7 @@ function renderMe(){
   if(!sel.options.length){sel.innerHTML=Object.keys(ROLES).filter(function(k){return !STAFF[k]||canStaff}).map(function(k){return '<option value="'+k+'">'+ROLES[k]+'</option>'}).join('');renderRegBtn()}
   var g=setGate();
   $('#reg').hidden=g!=='reg';
-  $('#mechip').innerHTML=registered()?'<span class="mechip r-'+me.role+'"><span class="av">'+initial(me.name)+'</span>'+esc(me.name)+' · '+ROLES[me.role]+' <button class="linkbtn" type="button" data-act="logout">Выйти</button></span>':'';
+  $('#mechip').innerHTML=registered()?'<span class="mechip r-'+me.role+'"><span class="av">'+initial(me.name)+'</span>'+esc(me.name)+' · '+ROLES[me.role]+' <button class="linkbtn" type="button" data-act="pw">Пароль</button> <button class="linkbtn" type="button" data-act="logout">Выйти</button></span>':'';
   var meLbl=document.querySelector('.me');if(meLbl)meLbl.hidden=registered();
   if(registered()){var dr=$('#q-driver');if(dr&&!dr.value)dr.value=me.name}
   $('#cnt-team').textContent=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).length;
@@ -980,6 +992,7 @@ function setMe(v){myName=v.trim();store.set('fll-me',myName)}
 document.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;
   var act=b.dataset.act,id=b.dataset.id;
+  if(act==='pw'){var bx=$('#pw-box');bx.hidden=!bx.hidden;$('#pw-msg').textContent='';if(!bx.hidden)$('#pw-new').focus();return}
   if(act==='logout'){sb.auth.signOut().then(function(){store.set('fll-reg','');location.reload()});return}
   if(act==='filter'){filter=b.dataset.f;renderChips();renderTasks();return}
   if(act==='play'){playId=id;renderPlayer(true);var pl=$('#player');try{pl.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){pl.scrollIntoView()}var v=pl.querySelector('video');if(v){try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}catch(e){}}document.querySelectorAll('.runs tbody tr').forEach(function(tr){tr.classList.toggle('sel',tr.dataset.id===id)});return}
@@ -1169,7 +1182,8 @@ function authErr(err){var t=(err&&err.message)||'ошибка';
   if(/not confirmed/i.test(t))return 'Почта не подтверждена. Администратору нужно выключить «Confirm email» в Supabase.';
   if(/rate limit|after \d+ seconds/i.test(t))return 'Слишком много попыток. Подождите минуту.';
   return 'Не получилось: '+t}
-function loginVals(){return {em:$('#login-email').value.trim(),pw:$('#login-pass').value}}
+function loginVals(){return {em:$('#login-email').value.trim().toLowerCase(),pw:$('#login-pass').value}}
+$('#login-show').addEventListener('change',function(){$('#login-pass').type=this.checked?'text':'password'});
 $('#f-login').addEventListener('submit',async function(e){
   e.preventDefault();var v=loginVals();if(!v.em||!v.pw||!sb)return;
   var b=$('#login-btn');b.disabled=true;loginMsg('Вхожу…');
@@ -1193,6 +1207,16 @@ $('#login-link').addEventListener('click',async function(){
   catch(err){loginMsg(authErr(err))}
 });
 $('#login-google').addEventListener('click',function(){if(sb)sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})});
+
+/* ---------- смена пароля ---------- */
+$('#pw-cancel').addEventListener('click',function(){$('#pw-box').hidden=true});
+$('#f-pw').addEventListener('submit',async function(e){
+  e.preventDefault();var v=$('#pw-new').value,m=$('#pw-msg');
+  if(v.length<6){m.textContent='Нужно минимум 6 символов.';return}
+  m.textContent='Сохраняю…';
+  try{var r=await sb.auth.updateUser({password:v});if(r.error)throw r.error;m.textContent='Готово. Новый пароль: «'+v+'». Запомните его: на другом устройстве войдите с ним.';$('#pw-new').value=''}
+  catch(err){m.textContent='Не получилось: '+((err&&err.message)||'ошибка')}
+});
 
 /* ---------- вкладки ---------- */
 function route(){
