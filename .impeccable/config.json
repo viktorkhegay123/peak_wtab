@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-18T15:03:20.601Z",
+        "reason": "Claude, per the user's chosen reference (Notion, 2026-11-18): Notion's UI type is Inter-based; recorded in PRODUCT.md Brand Commitments"
+      }
+    ]
+  }
+}
