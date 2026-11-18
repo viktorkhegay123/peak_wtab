@@ -3,7 +3,7 @@
 --
 -- Если база уже работала по старой схеме (одна команда), все старые данные
 -- переедут в команду «PEAK»: задачи, заезды, видео, Core Values, регистрации.
--- Код приглашения этой команды покажет запрос в самом низу файла.
+-- Новые участники находят команду по названию и подают заявку; капитан или ментор её принимает.
 -- Перед запуском на рабочей базе сделайте копию: Table Editor → kv → Export → CSV.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -185,8 +185,10 @@ begin
   if char_length(n) < 2 or char_length(n) > 60 then raise exception 'bad_name'; end if;
   if exists (select 1 from profiles where user_id = auth.uid()) then raise exception 'already_in_team'; end if;
   if (select count(*) from teams where created_by = auth.uid()) >= 5 then raise exception 'too_many_teams'; end if;
+  if exists (select 1 from teams where lower(name) = lower(n)) then raise exception 'name_taken'; end if;
   insert into teams (name, code, created_by) values (n, gen_team_code(), auth.uid()) returning * into t;
   insert into profiles (user_id, team_id) values (auth.uid(), t.id);
+  delete from join_requests where user_id = auth.uid();
   return jsonb_build_object('id', t.id, 'name', t.name, 'code', t.code, 'owner', true);
 end $$;
 
@@ -285,6 +287,93 @@ begin
   return n > 0;
 end $$;
 
+-- ---------- заявки на вступление: нашёл команду в списке, капитан или ментор принял ----------
+create table if not exists join_requests (
+  user_id uuid primary key references auth.users(id) on delete cascade,   -- одна заявка на человека
+  team_id uuid not null references teams(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 40),
+  email text,
+  created_at timestamptz not null default now()
+);
+alter table join_requests enable row level security;   -- без политик: только через функции ниже
+create index if not exists join_requests_team_idx on join_requests(team_id);
+
+-- поиск команды по названию: видно только название и число участников
+create or replace function search_teams(p_q text) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare q text := btrim(coalesce(p_q, ''));
+begin
+  if auth.uid() is null or char_length(q) < 2 then return '[]'::jsonb; end if;
+  q := replace(replace(replace(q, '\', '\\'), '%', '\%'), '_', '\_');
+  return coalesce((
+    select jsonb_agg(jsonb_build_object('id', t.id, 'name', t.name,
+             'members', (select count(*) from profiles p where p.team_id = t.id)) order by t.name)
+    from (select * from teams where name ilike '%' || q || '%' order by name limit 20) t
+  ), '[]'::jsonb);
+end $$;
+
+create or replace function request_join(p_team uuid, p_name text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare n text := btrim(coalesce(p_name, '')); tn text;
+begin
+  if auth.uid() is null then raise exception 'not_signed_in'; end if;
+  if exists (select 1 from profiles where user_id = auth.uid()) then raise exception 'already_in_team'; end if;
+  if char_length(n) < 1 or char_length(n) > 40 then raise exception 'bad_member_name'; end if;
+  select name into tn from teams where id = p_team;
+  if tn is null then raise exception 'no_team'; end if;
+  insert into join_requests (user_id, team_id, name, email)
+  values (auth.uid(), p_team, n, auth.jwt()->>'email')
+  on conflict (user_id) do update set team_id = excluded.team_id, name = excluded.name,
+    email = excluded.email, created_at = now();
+  return jsonb_build_object('team_id', p_team, 'team_name', tn, 'name', n);
+end $$;
+
+create or replace function my_request() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('team_id', r.team_id, 'team_name', t.name, 'name', r.name, 'created_at', r.created_at)
+  from join_requests r join teams t on t.id = r.team_id where r.user_id = auth.uid()
+$$;
+
+create or replace function cancel_request() returns void
+language sql security definer set search_path = public as
+$$ delete from join_requests where user_id = auth.uid() $$;
+
+create or replace function team_requests() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_staff() then return '[]'::jsonb; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('user_id', user_id, 'name', name, 'email', email,
+           'created_at', created_at) order by created_at)
+         from join_requests where team_id = my_team()), '[]'::jsonb);
+end $$;
+
+create or replace function approve_request(p_user uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare t uuid := my_team();
+begin
+  if not is_staff() then raise exception 'not_allowed'; end if;
+  if not exists (select 1 from join_requests where user_id = p_user and team_id = t) then raise exception 'no_request'; end if;
+  insert into profiles (user_id, team_id) values (p_user, t) on conflict (user_id) do nothing;
+  delete from join_requests where user_id = p_user;
+end $$;
+
+create or replace function decline_request(p_user uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_staff() then raise exception 'not_allowed'; end if;
+  delete from join_requests where user_id = p_user and team_id = my_team();
+end $$;
+
+revoke all on function search_teams(text) from public, anon;
+revoke all on function request_join(uuid, text) from public, anon;
+revoke all on function my_request() from public, anon;
+revoke all on function cancel_request() from public, anon;
+revoke all on function team_requests() from public, anon;
+revoke all on function approve_request(uuid) from public, anon;
+revoke all on function decline_request(uuid) from public, anon;
+grant execute on function search_teams(text), request_join(uuid, text), my_request(), cancel_request(),
+  team_requests(), approve_request(uuid), decline_request(uuid) to authenticated;
+
 -- ---------- доступ к функциям ----------
 revoke all on function create_team(text) from public, anon;
 revoke all on function join_team(text) from public, anon;
@@ -322,5 +411,7 @@ create policy videos_upload on storage.objects for insert to authenticated with 
 --   select 'mentor@gmail.com', id from teams where name = 'PEAK'
 -- on conflict (email) do update set team_id = excluded.team_id;
 
--- Коды приглашения команд (покажется после запуска):
-select name, substr(code, 1, 4) || '-' || substr(code, 5) as invite_code from teams order by created_at;
+-- Команды и число участников (покажется после запуска):
+select t.name, (select count(*) from profiles p where p.team_id = t.id) as members,
+       (select count(*) from join_requests r where r.team_id = t.id) as pending_requests
+from teams t order by t.created_at;
