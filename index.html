@@ -352,6 +352,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .mnums div{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line)}
 .mnums div:last-child{border-bottom:0}
 .mnums strong{font:600 14px/1.4 var(--font-body);color:var(--ink)}
+.mnums .lead{align-self:flex-start;margin-top:8px;border-radius:5px;padding:1px 8px;font:600 13px/1.55 var(--font-body);background:var(--t-yellow-bg);color:var(--t-yellow)}
 .st{font-size:12px}
 .st-doing{background:var(--t-blue-bg);color:var(--t-blue)}.st-review{background:var(--t-yellow-bg);color:var(--t-yellow)}.st-done{background:var(--t-green-bg);color:var(--t-green)}
 .mtasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
@@ -544,7 +545,6 @@ body:not([data-gate="ok"]) .countdown{display:none}
         <h2>Запись тренировки</h2>
         <input class="q-score" id="q-score" type="number" inputmode="numeric" min="0" placeholder="Баллы" aria-label="Баллы за заезд">
         <div class="q-row">
-          <input id="q-driver" list="people" placeholder="Кто вёл робота" maxlength="40" aria-label="Кто вёл робота">
           <input id="q-note" placeholder="Заметка: версия робота, что сломалось" maxlength="140" aria-label="Заметка">
           <label class="q-file">Видео заезда<input id="q-video" type="file" accept="video/*"></label>
           <div class="vstat" id="q-vstat" hidden></div>
@@ -872,9 +872,9 @@ function renderLog(){
   var rows=sorted.slice().reverse();
   if(!loaded.runs){$('#runs').innerHTML='<div class="empty">Загружаю журнал…</div>';return}
   if(!rows.length){$('#runs').innerHTML='<div class="empty">Журнал пуст. Впишите баллы выше и нажмите «Записать заезд»: запись появится здесь с датой и временем.</div>';return}
-  $('#runs').innerHTML='<table class="runs"><thead><tr><th>Дата и время</th><th>Баллы</th><th>Кто вёл</th><th>Заметка</th><th>Видео</th><th></th></tr></thead><tbody>'+rows.map(function(r){
+  $('#runs').innerHTML='<table class="runs"><thead><tr><th>Дата и время</th><th>Баллы</th><th>Заметка</th><th>Видео</th><th></th></tr></thead><tbody>'+rows.map(function(r){
     var armed=delArm==='r:'+r.id;
-    return '<tr data-id="'+esc(r.id)+'"'+(r.id===playId?' class="sel"':'')+'><td class="dtm">'+esc(fmtTs(r.ts))+'</td><td>'+badge(r.score)+'</td><td>'+esc(r.driver)+'</td><td>'+esc(r.note)+'</td><td>'+videoCell(r)+'</td><td>'+(canDel(r)?'<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="run-del" data-id="'+esc(r.id)+'">'+(armed?'Точно?':'Удалить')+'</button>':'')+'</td></tr>';
+    return '<tr data-id="'+esc(r.id)+'"'+(r.id===playId?' class="sel"':'')+'><td class="dtm">'+esc(fmtTs(r.ts))+'</td><td>'+badge(r.score)+'</td><td>'+esc(r.note)+'</td><td>'+videoCell(r)+'</td><td>'+(canDel(r)?'<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="run-del" data-id="'+esc(r.id)+'">'+(armed?'Точно?':'Удалить')+'</button>':'')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
 
@@ -975,7 +975,7 @@ function renderPlayer(force){
     screen='<a class="ext" href="'+esc(sel.link)+'" target="_blank" rel="noopener"><span class="big" aria-hidden="true"></span><b>Открыть видео'+(host?' на '+esc(host):'')+'</b><small>Видео по ссылке открывается в новой вкладке</small></a>';
   }
   var reel=vids.length>1?'<div class="reel">'+vids.map(function(r){return '<button type="button" data-act="play" data-id="'+esc(r.id)+'" aria-pressed="'+(r===sel)+'">'+badge(r.score)+'<span>'+esc(fmtTs(r.ts))+'</span></button>'}).join('')+'</div>':'';
-  el.innerHTML='<div class="player-head"><h2 style="margin:0">Видео заездов</h2><span class="dtm">'+vids.length+' '+plural(vids.length,['видео','видео','видео'])+'</span></div><div class="screen">'+screen+'</div><div class="cap">'+badge(sel.score)+'<span class="dtm">'+esc(fmtTs(sel.ts))+'</span>'+(sel.driver?'<span class="who">'+esc(sel.driver)+'</span>':'')+(sel.note?'<span class="nt">'+esc(sel.note)+'</span>':'')+'</div>'+reel;
+  el.innerHTML='<div class="player-head"><h2 style="margin:0">Видео заездов</h2><span class="dtm">'+vids.length+' '+plural(vids.length,['видео','видео','видео'])+'</span></div><div class="screen">'+screen+'</div><div class="cap">'+badge(sel.score)+'<span class="dtm">'+esc(fmtTs(sel.ts))+'</span>'+(sel.note?'<span class="nt">'+esc(sel.note)+'</span>':'')+'</div>'+reel;
 }
 var LIMIT=20*1024*1024;
 function mb(n){return (n/1048576).toFixed(1).replace('.',',')+' МБ'}
@@ -1097,17 +1097,18 @@ document.addEventListener('submit',function(e){
 function renderTeam(){
   renderTeamInfo();
   var el=$('#team'),staff=isStaff();
-  var ids=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).sort(function(a,b){var d=ROLE_ORDER.indexOf(members[a].role)-ROLE_ORDER.indexOf(members[b].role);return d||String(members[a].name).localeCompare(String(members[b].name))});
+  /* вклад участника — это выполненные задачи: заезды делает вся команда вместе */
+  var doneOf=function(id){return tasks.filter(function(t){return t.ownerId===id&&t.status==='done'}).length};
+  var ids=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).sort(function(a,b){var d=doneOf(b)-doneOf(a);if(d)return d;d=ROLE_ORDER.indexOf(members[a].role)-ROLE_ORDER.indexOf(members[b].role);return d||String(members[a].name).localeCompare(String(members[b].name))});
   if(!ids.length){el.innerHTML='<div class="box empty" style="grid-column:1/-1">'+(db?'Пока никто не зарегистрировался. Каждый участник при первом входе указывает имя и роль, и карточка появится здесь.':'')+'</div>';return}
+  var topDone=Math.max.apply(null,ids.map(doneOf));
   var num=function(v,l){return '<div><strong>'+v+'</strong>'+l+'</div>'};
   var STN={doing:'в работе',review:'на проверке',done:'принято'};
   el.innerHTML=ids.map(function(id){
-    var m=members[id],r=m.role,n=(m.name||'').toLowerCase();
+    var m=members[id],r=m.role;
     var mt=tasks.filter(function(t){return t.ownerId===id&&t.status!=='todo'});
     var cnt=function(st){return mt.filter(function(t){return t.status===st}).length};
-    var mr=runs.filter(function(x){return (x.driver||'').toLowerCase()===n});
-    var best=mr.length?Math.max.apply(null,mr.map(function(x){return x.score})):'—';
-    var nums=(staff?num(cnt('doing'),'в работе')+num(cnt('review'),'на проверке')+num(cnt('done'),'принято'):'')+num(mr.length,'заездов')+num(best,'лучший');
+    var nums=num(cnt('done'),'выполнено задач')+num(cnt('doing'),'в работе')+num(cnt('review'),'на проверке')+(topDone>0&&cnt('done')===topDone?'<span class="lead">больше всех задач</span>':'');
     var extra='';
     if(staff){
       extra='<ul class="mtasks">'+(mt.length?mt.map(function(t){return '<li><span class="st st-'+t.status+'">'+STN[t.status]+'</span>'+esc(t.title)+'</li>'}).join(''):'<li class="none">Задач нет</li>')+'</ul>';
@@ -1298,7 +1299,8 @@ $('#q-save').addEventListener('click',function(){
   var sc=parseInt($('#q-score').value,10);
   if(isNaN(sc)||sc<0){toast('Введите баллы за заезд');$('#q-score').focus();return}
   if(!guard())return;
-  var rec={ts:Date.now(),score:sc,driver:$('#q-driver').value.trim()||myName,note:$('#q-note').value.trim(),uid:uid};
+  /* заезд — работа всей команды, поэтому без «кто вёл» */
+  var rec={ts:Date.now(),score:sc,note:$('#q-note').value.trim(),uid:uid};
   var tt=totals();
   if(missions.length&&tt.s===sc&&sc>0){rec.missions={};missions.forEach(function(m){rec.missions[m.id]=units(m)})}
   if(checklist.length)rec.checklist=chkDone()+'/'+checklist.length;
