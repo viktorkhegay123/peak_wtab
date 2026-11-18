@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T12:00:00Z",
+  "title": "Design System: Штаб FLL",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Workspace Purple", "canonical": "#5645d4", "tonalRamp": ["#1c1647", "#2c226f", "#3d3097", "#4534b3", "#5645d4", "#8679e2", "#c3bcf1", "#efecfc"] },
+      "primary-soft": { "role": "primary", "displayName": "Purple Wash", "canonical": "#efecfc" },
+      "header-navy": { "role": "secondary", "displayName": "Header Navy", "canonical": "#0a1530", "tonalRamp": ["#050b19", "#0a1530", "#17264f", "#283a6e", "#45578b", "#7483ab", "#b7bfd4", "#e6e9f2"] },
+      "link-blue": { "role": "secondary", "displayName": "Link Blue", "canonical": "#0b6bcb" },
+      "focus-blue": { "role": "secondary", "displayName": "Focus Blue", "canonical": "#8ab4f8" },
+      "ink": { "role": "neutral", "displayName": "Warm Charcoal Ink", "canonical": "#37352f", "tonalRamp": ["#1f1e1a", "#37352f", "#4f4d47", "#6b6963", "#77756f", "#c8c6c1", "#e9e9e7", "#f7f6f3"] },
+      "surface-warm": { "role": "neutral", "displayName": "Warm Surface", "canonical": "#f7f6f3", "tonalRamp": ["#c8c6c1", "#dcdbd8", "#e9e9e7", "#efeeec", "#f1f1ef", "#f7f6f3", "#fbfaf8", "#ffffff"] },
+      "hairline": { "role": "neutral", "displayName": "Warm Hairline", "canonical": "#e9e9e7" },
+      "charcoal-chip": { "role": "neutral", "displayName": "Charcoal Chip", "canonical": "#2f2e2a" },
+      "zone-red": { "role": "tertiary", "displayName": "Zone Red", "canonical": "#d6322b", "tonalRamp": ["#5a1612", "#8a2a1e", "#b02a22", "#d6322b", "#e2655f", "#ee9d98", "#f7cdca", "#fde3df"] },
+      "zone-yellow": { "role": "tertiary", "displayName": "Zone Yellow", "canonical": "#b5600b", "tonalRamp": ["#4a2e08", "#6b4a12", "#8f5a0c", "#b5600b", "#d68a2e", "#ebb866", "#f6dca0", "#fbefcf"] },
+      "zone-green": { "role": "tertiary", "displayName": "Zone Green", "canonical": "#1f8a3b", "tonalRamp": ["#123a1f", "#215c34", "#1b7232", "#1f8a3b", "#4caa63", "#86c895", "#c0e3c7", "#dcefdf"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Product name in the navy header band." },
+      "numeral": { "displayName": "Numeral", "purpose": "Match timer; the family of big tabular numbers (countdown, run score, totals)." },
+      "headline": { "displayName": "Headline", "purpose": "Page title of each tab, team name, login heading." },
+      "title": { "displayName": "Title", "purpose": "Box headings." },
+      "card-title": { "displayName": "Card title", "purpose": "Task titles on board cards." },
+      "body": { "displayName": "Body", "purpose": "Default text with tabular numerals and Inter cv11/ss03." },
+      "label": { "displayName": "Label", "purpose": "Tags, pills, meta lines, small buttons, table headers." }
+    },
+    "shadows": [
+      { "name": "ring", "value": "0 0 0 1px rgba(15,15,15,.06), 0 2px 4px rgba(15,15,15,.06)", "purpose": "Resting task cards, Core Values tiles and stories, login sheet." },
+      { "name": "ring-hover", "value": "0 0 0 1px rgba(15,15,15,.08), 0 4px 10px rgba(15,15,15,.08)", "purpose": "Hovered cards and tiles." },
+      { "name": "ghost-lift", "value": "0 1px 2px rgba(15,15,15,.04)", "purpose": "Ghost buttons." },
+      { "name": "toast", "value": "0 8px 24px rgba(15,15,15,.2)", "purpose": "Floating toast only." },
+      { "name": "focus-halo", "value": "0 0 0 3px rgba(35,131,226,.18)", "purpose": "Focused inputs, with a #8ab4f8 border." }
+    ],
+    "motion": [
+      { "name": "control", "value": "background .12s, box-shadow .12s", "purpose": "Button and table-row hover." },
+      { "name": "card", "value": "box-shadow .15s", "purpose": "Card ring growth on hover." },
+      { "name": "timer-bar", "value": "width .25s linear", "purpose": "Timer progress." },
+      { "name": "reduced-motion", "value": "transition: none", "purpose": "All transitions off under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "no-stickers", "value": "1000px" },
+      { "name": "tablet", "value": "820px" },
+      { "name": "phone", "value": "640px" },
+      { "name": "small-phone", "value": "480px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled main action of a form or box.",
+      "html": "<button class=\"ds-btn\">Добавить</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:6px;background:#5645d4;color:#fff;border:1px solid transparent;border-radius:8px;padding:8px 14px;font:500 14px/1.2 Inter,system-ui,sans-serif;cursor:pointer;transition:background .12s,box-shadow .12s}.ds-btn:hover{background:#4534b3}.ds-btn:focus-visible{outline:2px solid #8ab4f8;outline-offset:2px}"
+    },
+    {
+      "name": "Tinted Card Action",
+      "kind": "button",
+      "refersTo": "button-tinted",
+      "description": "Secondary action inside task cards; fills purple only on hover.",
+      "html": "<button class=\"ds-btn-tint\">Взять себе</button>",
+      "css": ".ds-btn-tint{background:#efecfc;color:#5645d4;border:1px solid transparent;border-radius:6px;padding:5px 10px;font:500 13px/1.2 Inter,system-ui,sans-serif;cursor:pointer;transition:background .12s}.ds-btn-tint:hover{background:#5645d4;color:#fff}.ds-btn-tint:focus-visible{outline:2px solid #8ab4f8;outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Neutral secondary action: cancel, back, export.",
+      "html": "<button class=\"ds-btn-ghost\">Отмена</button>",
+      "css": ".ds-btn-ghost{background:#fff;color:#37352f;border:1px solid #dcdbd8;border-radius:8px;padding:8px 14px;font:500 14px/1.2 Inter,system-ui,sans-serif;box-shadow:0 1px 2px rgba(15,15,15,.04);cursor:pointer;transition:background .12s}.ds-btn-ghost:hover{background:#f7f6f3}.ds-btn-ghost:focus-visible{outline:2px solid #8ab4f8;outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Default field with hairline border and soft blue focus halo.",
+      "html": "<input class=\"ds-input\" placeholder=\"Новая задача\">",
+      "css": ".ds-input{background:#fff;color:#37352f;border:1px solid #dcdbd8;border-radius:8px;padding:8px 11px;font:400 15px/1.55 Inter,system-ui,sans-serif;box-shadow:inset 0 1px 1px rgba(15,15,15,.03)}.ds-input::placeholder{color:#77756f}.ds-input:hover{border-color:#c8c6c1}.ds-input:focus{outline:none;border-color:#8ab4f8;box-shadow:0 0 0 3px rgba(35,131,226,.18)}"
+    },
+    {
+      "name": "View Tabs",
+      "kind": "nav",
+      "description": "Underlined text tabs on a hairline baseline with count badges.",
+      "html": "<nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Задачи <span class=\"ds-count\">12</span></a><a href=\"#\">Тренировка</a><a href=\"#\">Core Values</a><a href=\"#\">Команда</a></nav>",
+      "css": ".ds-tabs{display:flex;gap:4px;border-bottom:1px solid #e9e9e7;font-family:Inter,system-ui,sans-serif}.ds-tabs a{display:inline-flex;align-items:center;gap:8px;padding:8px 10px 10px;text-decoration:none;color:#6b6963;font:500 15px/1.2 Inter,system-ui,sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px}.ds-tabs a:hover{color:#37352f}.ds-tabs a[aria-current=page]{color:#37352f;border-bottom-color:#37352f}.ds-tabs a:focus-visible{outline:2px solid #8ab4f8;outline-offset:2px}.ds-count{font:500 12px/1 Inter,system-ui,sans-serif;color:#6b6963;background:#f1f1ef;border-radius:5px;padding:3px 6px}"
+    },
+    {
+      "name": "Tags",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Pastel bg/text pairs for categories, statuses, Core Values and roles.",
+      "html": "<span class=\"ds-tag\">Без категории</span> <span class=\"ds-tag ds-blue\">Робот</span> <span class=\"ds-tag ds-orange\">Проект</span> <span class=\"ds-tag ds-green\">Core Values</span> <span class=\"ds-tag ds-purple\">Организация</span> <span class=\"ds-tag ds-red\">Просрочено</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:1px 7px;font:500 13px/1.55 Inter,system-ui,sans-serif;white-space:nowrap;background:#efeeec;color:#4b4943}.ds-blue{background:#dbe9f5;color:#1f4a6b}.ds-orange{background:#fbe3cf;color:#7a3e10}.ds-green{background:#dcefdf;color:#215c34}.ds-purple{background:#ebe3f5;color:#55307e}.ds-red{background:#fde3df;color:#8a2a1e}"
+    },
+    {
+      "name": "Board Group with Task Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Warm-surface status group with a dotted status pill and a ringed white task card whose edit actions appear on hover.",
+      "html": "<section class=\"ds-col\"><h2><span class=\"ds-pill\">В работе</span><span class=\"ds-n\">3</span></h2><article class=\"ds-card\"><h3>Собрать насадку для миссии 04</h3><div class=\"ds-meta\"><span class=\"ds-tag ds-blue\">Робот</span><span>Арман · до 22 ноя</span></div><div class=\"ds-acts\"><button class=\"ds-btn-tint\">Сдать на проверку</button><button class=\"ds-edit\">Изменить</button></div></article></section>",
+      "css": ".ds-col{max-width:300px;background:#f7f6f3;border-radius:10px;padding:10px;font-family:Inter,system-ui,sans-serif;color:#37352f}.ds-col h2{display:flex;justify-content:space-between;align-items:center;margin:0;padding:2px 2px 10px;font:500 14px/1.3 Inter,system-ui,sans-serif}.ds-pill{display:inline-flex;align-items:center;gap:6px;border-radius:5px;padding:1px 8px;background:#dbe9f5;color:#1f4a6b}.ds-pill::before{content:\"\";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.75}.ds-n{font-size:13px;color:#6b6963}.ds-card{background:#fff;border-radius:8px;padding:11px 12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 0 1px rgba(15,15,15,.06),0 2px 4px rgba(15,15,15,.06);transition:box-shadow .15s}.ds-card:hover{box-shadow:0 0 0 1px rgba(15,15,15,.08),0 4px 10px rgba(15,15,15,.08)}.ds-card h3{margin:0;font:600 15px/1.4 Inter,system-ui,sans-serif}.ds-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:#6b6963}.ds-tag{display:inline-flex;border-radius:5px;padding:1px 7px;font:500 13px/1.55 Inter,system-ui,sans-serif}.ds-blue{background:#dbe9f5;color:#1f4a6b}.ds-acts{display:flex;flex-wrap:wrap;gap:6px}.ds-btn-tint{background:#efecfc;color:#5645d4;border:0;border-radius:6px;padding:5px 10px;font:500 13px/1.2 Inter,system-ui,sans-serif;cursor:pointer}.ds-btn-tint:hover{background:#5645d4;color:#fff}.ds-edit{display:none;background:none;border:0;border-radius:6px;padding:5px 10px;font:500 13px/1.2 Inter,system-ui,sans-serif;color:#6b6963;cursor:pointer}.ds-card:hover .ds-edit,.ds-card:focus-within .ds-edit{display:inline-flex}.ds-edit:hover{background:rgba(55,53,47,.06);color:#37352f}"
+    },
+    {
+      "name": "Header Band",
+      "kind": "custom",
+      "refersTo": "header-band",
+      "description": "Full-bleed navy band: brand left, Notion brand-colour sticker dots in the filler, translucent countdown card right.",
+      "html": "<header class=\"ds-hero\"><div class=\"ds-brand\"><div class=\"ds-logo\">FLL</div><div><div class=\"ds-h1\">Штаб FLL</div><div class=\"ds-tagline\">задачи · тренировки · Core Values</div></div></div><div class=\"ds-dots\"></div><div class=\"ds-cd\"><span class=\"ds-cdn\">24</span><span class=\"ds-cdt\"><b>дня до турнира</b><span>Региональный этап</span></span></div></header>",
+      "css": ".ds-hero{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between;background:#0a1530;color:#fff;padding:26px 20px;font-family:Inter,system-ui,sans-serif}.ds-brand{display:flex;align-items:center;gap:14px}.ds-logo{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#5645d4;color:#fff;font:700 14px/1 Inter,system-ui,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}.ds-h1{font:700 32px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.025em}.ds-tagline{font-size:14px;color:#b7bfd4;margin-top:2px}.ds-dots{flex:1 1 120px;align-self:stretch;min-height:64px;background:radial-gradient(circle at 18% 30%,#f5d75e 0 7px,transparent 7.5px),radial-gradient(circle at 34% 74%,#ff64c8 0 5px,transparent 5.5px),radial-gradient(circle at 50% 22%,#2a9d99 0 4px,transparent 4.5px),radial-gradient(circle at 64% 62%,#dd5b00 0 8px,transparent 8.5px),radial-gradient(circle at 8% 70%,#7b3ff2 0 4px,transparent 4.5px),radial-gradient(circle at 82% 34%,#1aae39 0 5px,transparent 5.5px)}.ds-cd{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 16px}.ds-cdn{font:700 40px/1 Inter,system-ui,sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.ds-cdt{display:flex;flex-direction:column}.ds-cdt b{font-weight:600}.ds-cdt span{color:#b7bfd4;font-size:13px}"
+    },
+    {
+      "name": "Member Property List",
+      "kind": "custom",
+      "description": "Notion-style property rows inside member cards: muted label left, semibold value right, hairline separators.",
+      "html": "<div class=\"ds-props\"><div><strong>4</strong><span>В работе</span></div><div><strong>11</strong><span>Принято</span></div><div><strong>7</strong><span>Заездов</span></div></div>",
+      "css": ".ds-props{display:flex;flex-direction:column;max-width:260px;font:400 13px/1.55 Inter,system-ui,sans-serif;color:#6b6963}.ds-props div{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #e9e9e7}.ds-props div:last-child{border-bottom:0}.ds-props strong{font:600 14px/1.4 Inter,system-ui,sans-serif;color:#37352f;font-variant-numeric:tabular-nums}"
+    },
+    {
+      "name": "Match Timer",
+      "kind": "custom",
+      "description": "Big tabular countdown with a purple progress bar; yellow then red in warning and critical states.",
+      "html": "<div class=\"ds-timer\"><div class=\"ds-tm\">2:30</div><div class=\"ds-bar\"><i style=\"width:70%\"></i></div><button class=\"ds-btn\">Старт</button></div>",
+      "css": ".ds-timer{background:#fff;border:1px solid #e9e9e7;border-radius:12px;padding:20px;max-width:360px;font-family:Inter,system-ui,sans-serif}.ds-tm{font:700 88px/1 Inter,system-ui,sans-serif;letter-spacing:-.04em;text-align:center;padding:6px 0 16px;color:#37352f;font-variant-numeric:tabular-nums}.ds-bar{height:6px;border-radius:3px;background:#f1f1ef;overflow:hidden;margin-bottom:16px}.ds-bar i{display:block;height:100%;background:#5645d4}.ds-btn{width:100%;background:#5645d4;color:#fff;border:0;border-radius:8px;padding:11px 14px;font:500 15px/1.2 Inter,system-ui,sans-serif;cursor:pointer}.ds-btn:hover{background:#4534b3}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Team's Notion Page",
+    "overview": "A familiar, calm productivity workspace played straight at Notion's craft level. The body of every view is a white page: warm charcoal text, warm off-white group surfaces, hairlines barely darker than the paper, and soft pastel tags carrying every status, category, Core Value, role and score zone. One purple does the work of \"this is the main action\". Nothing glows, nothing is costumed; a member should read the board, the run log and the stories at a glance.\n\nThe one decoration is the header: a full-bleed deep navy band with the workspace icon, product name, team and user on the left, a handful of Notion brand-colour sticker dots in the free space, and the tournament countdown in a translucent card on the right. Below the band the page returns to quiet light work. Density is medium: 15px body, 8–16px gaps, cards that hold a title, a tag row, a meta line and actions without crowding.\n\nThe user rejected dark Linear-style looks and a notebook-grid concept, and declined coloured board columns, multi-coloured Core Values tiles and tab icons. The PEAK logo is a white wordmark and appears only as \"Made by PEAK\" on a dark chip in the footer; team photos are never used.",
+    "keyCharacteristics": [
+      "White canvas, warm grey surfaces (#f7f6f3 family), warm hairlines.",
+      "Pastel bg/text tag pairs as the only colour language for meaning.",
+      "One purple primary; tinted purple for secondary in-card actions.",
+      "Inter throughout, tabular numerals everywhere numbers appear.",
+      "Depth from a 1px ring plus a small soft shadow, never from glow.",
+      "A single navy header band with sticker dots as the only ornament."
+    ],
+    "rules": [
+      { "name": "The Tag Pair Rule", "body": "Meaning is carried by a pastel background with its own darker text from the same pair. No saturated fills for categories, no coloured text on white for status.", "section": "colors" },
+      { "name": "The One Purple Per Form Rule", "body": "Each form or box has at most one filled purple button; everything else is ghost, tinted or a link button. Inside cards the actions are tinted purple and only fill on hover.", "section": "colors" },
+      { "name": "The Red Means Something Rule", "body": "Red appears only for real errors (failed upload, overdue date, weak mission, destructive confirm) and for the red score zone. Never as decoration or emphasis.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Every number in the product uses tabular figures; never switch to proportional numerals for a \"nicer\" score.", "section": "typography" },
+      { "name": "The Neutral Shadow Rule", "body": "Shadows are neutral near-black at low alpha. No coloured glows, no hard offset shadows.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do carry every status, category, Core Value, role and score zone as a tag pair: pastel background plus its own darker text.",
+      "Do keep one filled purple button per form or box; use tinted, ghost or link buttons for the rest.",
+      "Do use the Ring shadow on content cards and a 1px hairline border on boxes; groups are tonal Warm Surface panels.",
+      "Do keep tabular numerals on every score, count, date and timer.",
+      "Do keep the navy band as the only dark surface besides the toast and the footer chip.",
+      "Do keep the sticker dots inside the header filler between brand and countdown, and hide them at ≤1000px.",
+      "Do show the PEAK logo only as the white wordmark on the dark \"Made by PEAK\" chip in the footer."
+    ],
+    "donts": [
+      "Don't use red outside real errors, overdue dates, weak missions, destructive confirms and the red score zone.",
+      "Don't use coloured glows or hard offset shadows; shadows stay neutral and soft.",
+      "Don't use gradient text.",
+      "Don't use coloured side-stripe borders on cards, banners or rows.",
+      "Don't colour the board columns, make the Core Values tiles multi-coloured or add tab icons; the user declined all three.",
+      "Don't use team photos, and don't place the PEAK logo anywhere but the footer chip.",
+      "Don't introduce a dark theme or notebook-grid backgrounds; the user rejected both."
+    ]
+  }
+}
