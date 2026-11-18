@@ -47,7 +47,7 @@ Supabase → **Authentication**:
 - По желанию: **Providers → Google** и в `config.js` поставить `GOOGLE_LOGIN: true`.
 
 ## 3. Выложить на Vercel
-1. Загрузите папку в репозиторий на GitHub (файлы в корне: `index.html`, `config.js`, `vercel.json`, `photos/`).
+1. Загрузите папку в репозиторий на GitHub (файлы в корне: `index.html`, `config.js`, `vercel.json`).
 2. vercel.com → Add New → Project → выберите репозиторий → Framework Preset: **Other** → Deploy.
 3. Свой домен: Project → Settings → Domains. Потом впишите его в Site URL в Supabase (шаг 2).
 
