@@ -322,28 +322,10 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .tg-card p{margin:0}
 .tg-card input{background:var(--surface)}
 .tg-card .btn{align-self:flex-start}
-.tlist{display:flex;flex-direction:column;gap:6px}
-.tlist:empty{display:none}
-.trow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--ink)}
-.trow:hover{border-color:var(--line2);background:var(--surface3)}
-.trow[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.trow b{font-weight:500;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
-.trow small{color:var(--muted);font-size:12px;white-space:nowrap}
-.tlist .tnote{padding:4px 2px}
-.tg-req{display:flex;flex-direction:column;gap:8px;padding-top:12px;margin-top:2px;border-top:1px solid var(--line)}
-.tg-req b{color:var(--ink);font-weight:500}
-.tg-wait{display:flex;gap:16px;align-items:flex-start;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:18px}
-.tg-wait h3{font:600 16px/1.3 var(--font-display);letter-spacing:-.02em;margin-bottom:6px}
-.tg-wait .tnote{margin:0 0 14px;font-size:14px;line-height:1.55}
-.tg-wait .tnote b{color:var(--ink);font-weight:500}
-.tg-dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--warn);margin-top:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--warn) 18%,transparent)}
-.reqs{display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
-.reqs h3{font:500 14px/1.3 var(--font-body);color:var(--ink)}
-.rqrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.rqrow .who{flex:1 1 200px;min-width:0}
-.rqrow .who b{font-weight:500;overflow-wrap:anywhere}
-.rqrow .who small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
-.count.req{background:var(--accent);border-color:var(--accent);color:#fff}
+.tpw{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.tpw input{flex:1 1 220px;max-width:340px}
+.tpw-warn{color:var(--ink2);background:var(--surface2);border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));border-radius:8px;padding:10px 12px;font-size:14px;margin-top:16px}
+.tpw-warn::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-right:9px;vertical-align:1px}
 .gate-out{margin-top:16px}
 #gate-load{display:none;text-align:center;color:var(--muted);padding:48px 0}
 body[data-gate="loading"] #gate-load{display:block}
@@ -408,33 +390,23 @@ body:not([data-gate="ok"]) .countdown{display:none}
   <section class="box reg" id="teamgate" hidden>
     <h2>Ваша команда</h2>
     <p>У каждой команды своё отдельное пространство: другие команды не видят ваши задачи, заезды и видео.</p>
-    <div class="tg-grid" id="tg-choose">
-      <div class="tg-card">
-        <h3>Найти свою команду</h3>
-        <p class="tnote">Начните вводить название. Капитан или ментор команды примет вашу заявку.</p>
-        <input id="find-q" maxlength="60" autocomplete="off" placeholder="Название команды, например PEAK" aria-label="Поиск команды">
-        <div class="tlist" id="find-list" aria-live="polite"></div>
-        <form class="tg-req" id="f-req" hidden>
-          <div class="tnote">Заявка в команду <b id="req-team"></b></div>
-          <input id="req-name" maxlength="40" placeholder="Ваше имя, например Адиль" aria-label="Ваше имя" required>
-          <button class="btn" type="submit">Отправить заявку</button>
-        </form>
-      </div>
+    <div class="tg-grid">
+      <form class="tg-card" id="f-join">
+        <h3>Войти в команду</h3>
+        <p class="tnote">Название и пароль команды скажет капитан или ментор.</p>
+        <input id="join-name" maxlength="60" autocomplete="off" placeholder="Название команды" aria-label="Название команды" required>
+        <input id="join-pass" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Пароль команды" aria-label="Пароль команды" required>
+        <button class="btn" type="submit">Войти в команду</button>
+      </form>
       <form class="tg-card" id="f-newteam">
         <h3>Создать команду</h3>
-        <p class="tnote">Если вашей команды ещё нет. Вы станете её капитаном или ментором и будете принимать заявки участников.</p>
-        <input id="team-name" maxlength="60" placeholder="Название команды" aria-label="Название команды" required>
+        <p class="tnote">Для капитана или ментора. Придумайте название и пароль: по ним участники будут входить в команду.</p>
+        <input id="team-name" maxlength="60" autocomplete="off" placeholder="Название команды" aria-label="Название команды" required>
+        <input id="team-pass" type="password" minlength="6" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Пароль команды, от 6 символов" aria-label="Пароль новой команды" required>
         <button class="btn ghost" type="submit">Создать</button>
       </form>
     </div>
-    <div class="tg-wait" id="tg-wait" hidden>
-      <div class="tg-dot" aria-hidden="true"></div>
-      <div>
-        <h3>Заявка отправлена</h3>
-        <p class="tnote" id="wait-txt"></p>
-        <button class="btn ghost small" type="button" data-act="req-cancel">Отменить заявку</button>
-      </div>
-    </div>
+    <label class="chk"><input type="checkbox" id="tg-show"> Показать пароли</label>
     <div class="reg-note" id="team-msg"></div>
     <div class="gate-out"><button class="linkbtn" type="button" data-act="logout">Выйти из аккаунта</button></div>
   </section>
@@ -454,7 +426,7 @@ body:not([data-gate="ok"]) .countdown{display:none}
     <a href="#tasks" data-tab="tasks">Задачи <span class="count" id="cnt-open">0</span></a>
     <a href="#match" data-tab="match">Тренировка</a>
     <a href="#cv" data-tab="cv">Core Values</a>
-    <a href="#team" data-tab="team">Команда <span class="count" id="cnt-team">0</span><span class="count req" id="cnt-req" title="Заявки на вступление" hidden></span></a>
+    <a href="#team" data-tab="team">Команда <span class="count" id="cnt-team">0</span></a>
   </nav>
 
   <!-- ЗАДАЧИ -->
@@ -550,7 +522,7 @@ body:not([data-gate="ok"]) .countdown{display:none}
 
   <!-- КОМАНДА -->
   <section id="tab-team" class="panel">
-    <div class="phead"><h2 id="team-banner">Команда</h2><p>Участники, роли и заявки на вступление</p></div>
+    <div class="phead"><h2 id="team-banner">Команда</h2><p>Участники, роли и пароль команды</p></div>
     <div class="box" id="team-info" style="margin-bottom:14px" hidden></div>
     <div class="team" id="team"></div>
   </section>
@@ -631,7 +603,8 @@ function renderCapNote(){
   var n=$('#cap-note');$('#f-task').hidden=!isStaff();
   if(!db||!registered()){n.hidden=true;return}
   n.hidden=false;
-  if(isStaff())n.textContent='Вы — '+ROLES[me.role].toLowerCase()+': ставите задачи, видите, кто какие взял, и принимаете выполненное. Участники видят только свободные задачи и свои.';
+  if(isStaff()&&team&&team.has_password===false)n.textContent='Задайте пароль команды на вкладке «Команда»: без него новые участники не смогут войти.';
+  else if(isStaff())n.textContent='Вы — '+ROLES[me.role].toLowerCase()+': ставите задачи, видите, кто какие взял, и принимаете выполненное. Участники видят только свободные задачи и свои.';
   else if(STAFF[me.role])n.textContent='Вы — '+ROLES[me.role].toLowerCase()+'. Роль подтверждается на сервере.';
   else n.textContent='Здесь свободные задачи от капитана и ментора. Возьмите задачу, и она исчезнет у остальных. Когда сделаете, сдайте её на проверку.';
 }
@@ -1024,31 +997,32 @@ function renderMe(){
   if(registered()){var dr=$('#q-driver');if(dr&&!dr.value)dr.value=me.name}
   $('#cnt-team').textContent=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).length;
 }
-var joinReqs=[];
-function renderReqBadge(){var b=$('#cnt-req');var n=isStaff()?joinReqs.length:0;b.hidden=!n;b.textContent=n?'+'+n:''}
 function renderTeamInfo(){
   var el=$('#team-info');
   if(!team){el.hidden=true;return}
-  el.hidden=false;renderReqBadge();
+  var ae=document.activeElement;if(ae&&ae.id==='teampw-new'&&el.contains(ae))return; /* не стираем пароль, который сейчас вводят */
+  el.hidden=false;
   var staff=isStaff(),lv=delArm==='team-leave';
-  var reqs='';
+  var pw='';
   if(staff){
-    reqs='<div class="reqs"><h3>Заявки на вступление'+(joinReqs.length?' · '+joinReqs.length:'')+'</h3>'+
-      (joinReqs.length?joinReqs.map(function(q){
-        var dn=delArm==='rq:'+q.user_id;
-        return '<div class="rqrow"><div class="who"><b>'+esc(q.name)+'</b><small>'+esc(q.email||'')+(q.created_at?' · '+esc(fmtTs(Date.parse(q.created_at))):'')+'</small></div>'+
-          '<div class="acts"><button class="btn small" type="button" data-act="req-ok" data-id="'+esc(q.user_id)+'">Принять</button>'+
-          '<button class="btn '+(dn?'danger':'ghost')+' small" type="button" data-act="req-no" data-id="'+esc(q.user_id)+'">'+(dn?'Точно отклонить?':'Отклонить')+'</button></div></div>';
-      }).join(''):'<div class="tnote">Новых заявок нет. Участники находят команду по названию «'+esc(team.name)+'» и подают заявку, она появится здесь.</div>')+'</div>';
+    pw=(team.has_password?'':'<div class="tpw-warn">У команды ещё нет пароля, поэтому новые участники не могут в неё войти. Придумайте пароль и скажите его своим.</div>')+
+      '<form class="tpw" id="f-teampw"><input id="teampw-new" type="password" minlength="6" autocomplete="new-password" placeholder="'+(team.has_password?'Новый пароль команды':'Пароль команды, от 6 символов')+'" aria-label="Пароль команды" required>'+
+      '<button class="btn'+(team.has_password?' ghost':'')+' small" type="submit">'+(team.has_password?'Сменить пароль команды':'Задать пароль команды')+'</button></form>';
   }
-  el.innerHTML='<div class="teaminfo"><div class="tname"><h2>'+esc(team.name)+'</h2><div class="tnote">'+(staff?'Скажите участникам название команды: они найдут её на сайте и подадут заявку, а вы примете её здесь.':'Новые участники находят команду по названию и подают заявку. Принимает её капитан или ментор.')+'</div></div></div>'+
+  el.innerHTML='<div class="teaminfo"><div class="tname"><h2>'+esc(team.name)+'</h2><div class="tnote">'+(staff?'Чтобы позвать участника, скажите ему название команды «'+esc(team.name)+'» и пароль команды. Он создаст свой аккаунт и войдёт по ним.':'Новые участники входят в команду по её названию и паролю. Пароль знают капитан и ментор.')+'</div></div></div>'+
     '<div class="acts">'+(staff?'<button class="btn ghost small" type="button" data-act="team-export">Скачать копию данных</button>':'')+
-    '<button class="btn '+(lv?'danger':'ghost')+' small" type="button" data-act="team-leave">'+(lv?'Точно выйти из команды?':'Выйти из команды')+'</button></div>'+reqs;
+    '<button class="btn '+(lv?'danger':'ghost')+' small" type="button" data-act="team-leave">'+(lv?'Точно выйти из команды?':'Выйти из команды')+'</button></div>'+pw;
 }
-async function loadReqs(){
-  if(!isStaff()){joinReqs=[];renderReqBadge();return}
-  try{var r=await sb.rpc('team_requests');if(!r.error){var nx=Array.isArray(r.data)?r.data:[];var ch=JSON.stringify(nx)!==JSON.stringify(joinReqs);joinReqs=nx;if(ch)renderTeamInfo();renderReqBadge()}}catch(e){}
-}
+document.addEventListener('submit',function(e){
+  if(e.target.id!=='f-teampw')return;e.preventDefault();
+  if(!guardStaff())return;var v=$('#teampw-new').value;
+  if(v.length<6){toast('Пароль команды: минимум 6 символов');return}
+  var b=e.target.querySelector('button');b.disabled=true;
+  sb.rpc('set_team_password',{p_password:v}).then(function(r){
+    if(r.error)throw r.error;team.has_password=true;$('#teampw-new').value='';$('#teampw-new').blur();renderTeamInfo();renderCapNote();
+    toast('Пароль команды сохранён. Скажите его участникам вместе с названием.');
+  }).catch(function(err){b.disabled=false;toast('Не удалось сохранить: '+rpcErr(err))});
+});
 function renderTeam(){
   renderTeamInfo();
   var el=$('#team'),staff=isStaff();
@@ -1091,20 +1065,6 @@ document.addEventListener('click',function(e){
   var act=b.dataset.act,id=b.dataset.id;
   if(act==='pw'){var bx=$('#pw-box');bx.hidden=!bx.hidden;$('#pw-msg').textContent='';if(!bx.hidden)$('#pw-new').focus();return}
   if(act==='logout'){if(!sb){location.reload();return}sb.auth.signOut().then(function(){store.set('fll-reg','');location.reload()});return}
-  if(act==='pick-team'){pickTeam(id,b.dataset.name);return}
-  if(act==='req-cancel'){
-    sb.rpc('cancel_request').then(function(r){if(r.error)throw r.error;showChoose();teamMsg('Заявка отменена.')}).catch(function(e){teamMsg(rpcErr(e),true)});
-    return}
-  if(act==='req-ok'){
-    if(!guardStaff())return;b.disabled=true;
-    var rq=joinReqs.find(function(x){return x.user_id===id});
-    sb.rpc('approve_request',{p_user:id}).then(function(r){if(r.error)throw r.error;joinReqs=joinReqs.filter(function(x){return x.user_id!==id});renderTeamInfo();toast((rq?rq.name:'Участник')+' теперь в команде. Осталось только выбрать роль при входе.')}).catch(function(e){b.disabled=false;toast('Не удалось принять: '+rpcErr(e))});
-    return}
-  if(act==='req-no'){
-    var rk='rq:'+id;if(delArm!==rk){armDelete(rk);return}
-    if(!guardStaff())return;delArm=null;
-    sb.rpc('decline_request',{p_user:id}).then(function(r){if(r.error)throw r.error;joinReqs=joinReqs.filter(function(x){return x.user_id!==id});renderTeamInfo();toast('Заявка отклонена')}).catch(function(e){toast('Не удалось отклонить: '+rpcErr(e))});
-    return}
   if(act==='team-export'){if(!guardStaff())return;exportTeam();return}
   if(act==='team-leave'){
     if(delArm!=='team-leave'){armDelete('team-leave');return}
@@ -1488,64 +1448,26 @@ async function init(){
   else{document.body.dataset.gate='auth';showLogin()}
 }
 /* ---------- команда ---------- */
-var TEAM_ERR={name_taken:'Команда с таким названием уже есть. Найдите её через поиск и подайте заявку, или выберите другое название.',bad_member_name:'Впишите своё имя, чтобы капитан понял, кто подаёт заявку.',no_team:'Эта команда больше не существует. Найдите другую.',no_request:'Этой заявки уже нет: её отменили или приняли.',already_in_team:'Вы уже состоите в команде. Чтобы перейти в другую, сначала выйдите из текущей на вкладке «Команда».',bad_name:'Название команды: от 2 до 60 символов.',too_many_teams:'С одного аккаунта можно создать не больше 5 команд.',not_allowed:'Это может только капитан или ментор.',not_self:'Себя убрать нельзя: выйдите из команды сами.',not_signed_in:'Сначала войдите.'};
+var TEAM_ERR={no_password_yet:'Капитан ещё не задал пароль этой команды. Попросите его сделать это на вкладке «Команда».',bad_password:'Неверный пароль команды. Уточните его у капитана или ментора.',weak_password:'Пароль команды: минимум 6 символов.',no_team:'Команды с таким названием нет. Проверьте написание у капитана или создайте свою команду.',name_taken:'Команда с таким названием уже есть. Если это ваша команда, войдите в неё по паролю.',already_in_team:'Вы уже состоите в команде. Чтобы перейти в другую, сначала выйдите из текущей на вкладке «Команда».',bad_name:'Название команды: от 2 до 60 символов.',too_many_teams:'С одного аккаунта можно создать не больше 5 команд.',not_allowed:'Это может только капитан или ментор.',not_self:'Себя убрать нельзя: выйдите из команды сами.',not_signed_in:'Сначала войдите.'};
 function rpcErr(e){var t=(e&&e.message)||'ошибка';for(var k in TEAM_ERR){if(t.indexOf(k)>=0)return TEAM_ERR[k]}if(/function .* does not exist|Could not find the function/i.test(t))return 'База не обновлена: администратору нужно выполнить новый schema.sql в Supabase.';return t}
 function teamMsg(t,warn){var m=$('#team-msg');m.className='reg-note'+(warn?' warn':'');m.textContent=t}
 async function loadTeam(){var r=await sb.rpc('team_info');if(r.error)throw r.error;team=r.data&&r.data.id?r.data:null;return team}
-/* без команды: найти команду и подать заявку или создать свою; пока заявка ждёт, сайт сам проверяет, не приняли ли её */
-var picked=null, waitTimer=null, findTimer=null, findSeq=0, reqName='';
-function showChoose(){
-  clearInterval(waitTimer);waitTimer=null;
-  $('#tg-wait').hidden=true;$('#tg-choose').hidden=false;$('#f-req').hidden=!picked;
+/* без команды: войти в свою по названию и паролю или создать новую */
+function showTeamGate(){
+  document.body.dataset.gate='team';$('#teamgate').hidden=false;$('#join-name').focus();
 }
-function showWait(rq){
-  $('#tg-choose').hidden=true;$('#tg-wait').hidden=false;teamMsg('');reqName=rq.name||'';
-  $('#wait-txt').innerHTML='Заявка в команду <b>'+esc(rq.team_name)+'</b> от имени <b>'+esc(rq.name)+'</b> ждёт, пока её примет капитан или ментор. Сообщите им, что вы подали заявку. Когда её примут, эта страница откроется сама.';
-  clearInterval(waitTimer);
-  waitTimer=setInterval(checkWait,10000);
-}
-async function checkWait(){
-  try{
-    if(await loadTeam()){clearInterval(waitTimer);waitTimer=null;toast('Заявку приняли: добро пожаловать в «'+team.name+'»');enterTeam();return}
-    var r=await sb.rpc('my_request');
-    if(!r.error&&!(r.data&&r.data.team_id)){showChoose();teamMsg('Заявку отклонили. Проверьте, ту ли команду вы выбрали, или поговорите с капитаном.',true)}
-  }catch(e){}
-}
-async function showTeamGate(){
-  document.body.dataset.gate='team';$('#teamgate').hidden=false;
-  try{var r=await sb.rpc('my_request');if(!r.error&&r.data&&r.data.team_id){showWait(r.data);return}}catch(e){}
-  showChoose();$('#find-q').focus();
-}
-function pickTeam(id,name){
-  picked={id:id,name:name};
-  document.querySelectorAll('#find-list .trow').forEach(function(x){x.setAttribute('aria-pressed',String(x.dataset.id===id))});
-  $('#req-team').textContent='«'+name+'»';$('#f-req').hidden=false;
-  $('#req-name').focus();
-}
-async function findTeams(){
-  var q=$('#find-q').value.trim(),list=$('#find-list'),seq=++findSeq;
-  picked=null;$('#f-req').hidden=true;
-  if(q.length<2){list.innerHTML='';return}
-  try{
-    var r=await sb.rpc('search_teams',{p_q:q});if(r.error)throw r.error;if(seq!==findSeq)return;
-    var a=Array.isArray(r.data)?r.data:[];
-    list.innerHTML=a.length?a.map(function(t){return '<button type="button" class="trow" data-act="pick-team" data-id="'+esc(t.id)+'" data-name="'+esc(t.name)+'" aria-pressed="false"><b>'+esc(t.name)+'</b><small>'+t.members+' '+plural(t.members,['участник','участника','участников'])+'</small></button>'}).join('')
-      :'<div class="tnote">Команды «'+esc(q)+'» не нашлось. Проверьте название у капитана или создайте свою команду.</div>';
-    if(a.length===1)pickTeam(a[0].id,a[0].name);
-  }catch(e){if(seq===findSeq)list.innerHTML='<div class="tnote">'+esc(rpcErr(e))+'</div>'}
-}
-$('#find-q').addEventListener('input',function(){clearTimeout(findTimer);findTimer=setTimeout(findTeams,250)});
-$('#find-q').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();clearTimeout(findTimer);findTeams()}});
-$('#f-req').addEventListener('submit',async function(e){
-  e.preventDefault();var n=$('#req-name').value.trim();if(!picked||!n||!sb)return;
-  var b=this.querySelector('button');b.disabled=true;teamMsg('Отправляю заявку…');
-  try{var r=await sb.rpc('request_join',{p_team:picked.id,p_name:n});if(r.error)throw r.error;showWait(r.data)}
+$('#tg-show').addEventListener('change',function(){var t=this.checked?'text':'password';$('#join-pass').type=t;$('#team-pass').type=t});
+$('#f-join').addEventListener('submit',async function(e){
+  e.preventDefault();var n=$('#join-name').value.trim(),pw=$('#join-pass').value;if(!n||!pw||!sb)return;
+  var b=this.querySelector('button');b.disabled=true;teamMsg('Проверяю…');
+  try{var r=await sb.rpc('join_team',{p_name:n,p_password:pw});if(r.error)throw r.error;team=r.data;$('#join-pass').value='';teamMsg('');enterTeam()}
   catch(err){teamMsg(rpcErr(err),true)}finally{b.disabled=false}
 });
 $('#f-newteam').addEventListener('submit',async function(e){
-  e.preventDefault();var n=$('#team-name').value.trim();if(!n||!sb)return;
+  e.preventDefault();var n=$('#team-name').value.trim(),pw=$('#team-pass').value;if(!n||!sb)return;
+  if(pw.length<6){teamMsg('Пароль команды: минимум 6 символов.',true);return}
   var b=this.querySelector('button');b.disabled=true;teamMsg('Создаю команду…');
-  try{var r=await sb.rpc('create_team',{p_name:n});if(r.error)throw r.error;team=r.data;enterTeam();toast('Команда «'+team.name+'» создана. Заявки участников появятся на вкладке «Команда».')}
+  try{var r=await sb.rpc('create_team',{p_name:n,p_password:pw});if(r.error)throw r.error;team=r.data;$('#team-pass').value='';teamMsg('');enterTeam();toast('Команда «'+team.name+'» создана. Скажите участникам её название и пароль.')}
   catch(err){teamMsg(rpcErr(err),true)}finally{b.disabled=false}
 });
 async function exportTeam(){
@@ -1568,9 +1490,7 @@ async function start(sess){
   enterTeam();
 }
 async function enterTeam(){
-  clearInterval(waitTimer);waitTimer=null;
   $('#teamgate').hidden=true;document.body.dataset.gate='loading';
-  if(reqName)$('#reg-name').value=reqName;
   $('.tag').textContent=team.name+' · задачи · тренировки · Core Values';
   $('#foot-team').textContent='Штаб FLL · '+team.name;document.title='Штаб FLL · '+team.name;
   db=makeDb(sb,team.id);canWrite=true;isAdmin=true;assetsApi=makeAssets(sb,team.id);
@@ -1609,12 +1529,11 @@ async function enterTeam(){
       /* сначала убеждаемся, что вход действует: иначе сервер вернёт пустоту, и интерфейс решит, что данных нет */
       var ss=null;try{ss=await sb.auth.getSession()}catch(e){}
       if(!ss||!ss.data||!ss.data.session){banner('Нет связи с сервером или вход устарел. Ваши данные в сохранности: проверьте интернет и обновите страницу.');return}
-      try{var ti=await sb.rpc('team_info');if(!ti.error&&!(ti.data&&ti.data.id)){location.href=location.pathname;return}}catch(e){}
+      try{var ti=await sb.rpc('team_info');if(!ti.error&&!(ti.data&&ti.data.id)){location.href=location.pathname;return}if(!ti.error)team.has_password=!!ti.data.has_password}catch(e){}
       await Promise.all(Object.keys(H).map(function(k){
         return ref(k).get().then(function(s){gotAny=true;H[k](s)}).catch(function(e){if(!gotAny&&(k==='tasks'||k==='runs'))fail(e)});
       }));
       if(gotAny&&$('#banner').textContent.indexOf('Нет связи')===0)banner('');
-      await loadReqs();
     })().finally(function(){busy=null});
     return busy;
   };
@@ -1623,7 +1542,6 @@ async function enterTeam(){
   });
   refreshAll();
   setInterval(function(){if(document.visibilityState!=='hidden')refreshAll()},60000);
-  setInterval(function(){if(document.visibilityState!=='hidden'&&isStaff())loadReqs()},20000);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')refreshAll()});
 }
 init();

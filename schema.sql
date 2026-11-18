@@ -3,7 +3,8 @@
 --
 -- Если база уже работала по старой схеме (одна команда), все старые данные
 -- переедут в команду «PEAK»: задачи, заезды, видео, Core Values, регистрации.
--- Новые участники находят команду по названию и подают заявку; капитан или ментор её принимает.
+-- Капитан создаёт команду с названием и паролем, участники входят в неё по названию и паролю.
+-- У перенесённой команды PEAK пароля ещё нет: капитан задаёт его на вкладке «Команда».
 -- Перед запуском на рабочей базе сделайте копию: Table Editor → kv → Export → CSV.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -176,42 +177,71 @@ create policy kv_delete on kv for delete to authenticated using (
   )
 );
 
--- ---------- команды: создать, вступить, выйти ----------
-create or replace function create_team(p_name text) returns jsonb
+-- ---------- команды: капитан создаёт команду с названием и паролем, участники входят по ним ----------
+-- пароль хранится только в виде хеша (bcrypt), узнать его из базы нельзя
+alter table teams add column if not exists pass_hash text;
+create unique index if not exists teams_name_lower_idx on teams (lower(name));
+
+-- от старых вариантов вступления (код, заявки) ничего не остаётся
+drop function if exists join_team(text);
+drop function if exists create_team(text);
+drop function if exists regen_team_code();
+drop function if exists search_teams(text);
+drop function if exists request_join(uuid, text);
+drop function if exists my_request();
+drop function if exists cancel_request();
+drop function if exists team_requests();
+drop function if exists approve_request(uuid);
+drop function if exists decline_request(uuid);
+drop table if exists join_requests;
+
+create or replace function create_team(p_name text, p_password text) returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare t teams; n text := btrim(coalesce(p_name, ''));
 begin
   if auth.uid() is null then raise exception 'not_signed_in'; end if;
   if char_length(n) < 2 or char_length(n) > 60 then raise exception 'bad_name'; end if;
+  if char_length(coalesce(p_password, '')) < 6 then raise exception 'weak_password'; end if;
   if exists (select 1 from profiles where user_id = auth.uid()) then raise exception 'already_in_team'; end if;
   if (select count(*) from teams where created_by = auth.uid()) >= 5 then raise exception 'too_many_teams'; end if;
   if exists (select 1 from teams where lower(name) = lower(n)) then raise exception 'name_taken'; end if;
-  insert into teams (name, code, created_by) values (n, gen_team_code(), auth.uid()) returning * into t;
+  insert into teams (name, code, created_by, pass_hash)
+  values (n, gen_team_code(), auth.uid(), extensions.crypt(p_password, extensions.gen_salt('bf')))
+  returning * into t;
   insert into profiles (user_id, team_id) values (auth.uid(), t.id);
-  delete from join_requests where user_id = auth.uid();
-  return jsonb_build_object('id', t.id, 'name', t.name, 'code', t.code, 'owner', true);
+  return jsonb_build_object('id', t.id, 'name', t.name, 'owner', true, 'has_password', true);
 end $$;
 
-create or replace function join_team(p_code text) returns jsonb
+create or replace function join_team(p_name text, p_password text) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare t teams; cur uuid;
-  c text := upper(regexp_replace(coalesce(p_code, ''), '[^A-Za-z0-9]', '', 'g'));
+declare t teams; cur uuid; n text := btrim(coalesce(p_name, ''));
 begin
   if auth.uid() is null then raise exception 'not_signed_in'; end if;
-  select * into t from teams where code = c;
-  if t.id is null then
-    perform pg_sleep(0.4);   -- замедляем перебор кодов
-    raise exception 'bad_code';
+  select * into t from teams where lower(name) = lower(n);
+  if t.id is null then raise exception 'no_team'; end if;
+  if t.pass_hash is null then raise exception 'no_password_yet'; end if;
+  if extensions.crypt(coalesce(p_password, ''), t.pass_hash) <> t.pass_hash then
+    perform pg_sleep(0.5);   -- замедляем подбор пароля
+    raise exception 'bad_password';
   end if;
   select team_id into cur from profiles where user_id = auth.uid();
   if cur is not null and cur <> t.id then raise exception 'already_in_team'; end if;
   insert into profiles (user_id, team_id) values (auth.uid(), t.id) on conflict (user_id) do nothing;
-  return jsonb_build_object('id', t.id, 'name', t.name, 'code', t.code, 'owner', coalesce(t.created_by = auth.uid(), false));
+  return jsonb_build_object('id', t.id, 'name', t.name, 'owner', coalesce(t.created_by = auth.uid(), false), 'has_password', true);
+end $$;
+
+create or replace function set_team_password(p_password text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_staff() then raise exception 'not_allowed'; end if;
+  if char_length(coalesce(p_password, '')) < 6 then raise exception 'weak_password'; end if;
+  update teams set pass_hash = extensions.crypt(p_password, extensions.gen_salt('bf')) where id = my_team();
 end $$;
 
 create or replace function team_info() returns jsonb
 language sql stable security definer set search_path = public as $$
-  select jsonb_build_object('id', t.id, 'name', t.name, 'code', t.code, 'owner', coalesce(t.created_by = auth.uid(), false))
+  select jsonb_build_object('id', t.id, 'name', t.name, 'owner', coalesce(t.created_by = auth.uid(), false),
+                            'has_password', t.pass_hash is not null)
   from teams t where t.id = my_team()
 $$;
 
@@ -223,16 +253,6 @@ begin
   if t is null then return; end if;
   delete from kv where team = t and coll = 'members' and id = auth.uid()::text;
   delete from profiles where user_id = auth.uid();
-end $$;
-
-create or replace function regen_team_code() returns text
-language plpgsql security definer set search_path = public as $$
-declare c text;
-begin
-  if not is_staff() then raise exception 'not_allowed'; end if;
-  c := gen_team_code();
-  update teams set code = c where id = my_team();
-  return c;
 end $$;
 
 create or replace function remove_member(p_user uuid) returns void
@@ -287,106 +307,19 @@ begin
   return n > 0;
 end $$;
 
--- ---------- заявки на вступление: нашёл команду в списке, капитан или ментор принял ----------
-create table if not exists join_requests (
-  user_id uuid primary key references auth.users(id) on delete cascade,   -- одна заявка на человека
-  team_id uuid not null references teams(id) on delete cascade,
-  name text not null check (char_length(name) between 1 and 40),
-  email text,
-  created_at timestamptz not null default now()
-);
-alter table join_requests enable row level security;   -- без политик: только через функции ниже
-create index if not exists join_requests_team_idx on join_requests(team_id);
-
--- поиск команды по названию: видно только название и число участников
-create or replace function search_teams(p_q text) returns jsonb
-language plpgsql stable security definer set search_path = public as $$
-declare q text := btrim(coalesce(p_q, ''));
-begin
-  if auth.uid() is null or char_length(q) < 2 then return '[]'::jsonb; end if;
-  q := replace(replace(replace(q, '\', '\\'), '%', '\%'), '_', '\_');
-  return coalesce((
-    select jsonb_agg(jsonb_build_object('id', t.id, 'name', t.name,
-             'members', (select count(*) from profiles p where p.team_id = t.id)) order by t.name)
-    from (select * from teams where name ilike '%' || q || '%' order by name limit 20) t
-  ), '[]'::jsonb);
-end $$;
-
-create or replace function request_join(p_team uuid, p_name text) returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare n text := btrim(coalesce(p_name, '')); tn text;
-begin
-  if auth.uid() is null then raise exception 'not_signed_in'; end if;
-  if exists (select 1 from profiles where user_id = auth.uid()) then raise exception 'already_in_team'; end if;
-  if char_length(n) < 1 or char_length(n) > 40 then raise exception 'bad_member_name'; end if;
-  select name into tn from teams where id = p_team;
-  if tn is null then raise exception 'no_team'; end if;
-  insert into join_requests (user_id, team_id, name, email)
-  values (auth.uid(), p_team, n, auth.jwt()->>'email')
-  on conflict (user_id) do update set team_id = excluded.team_id, name = excluded.name,
-    email = excluded.email, created_at = now();
-  return jsonb_build_object('team_id', p_team, 'team_name', tn, 'name', n);
-end $$;
-
-create or replace function my_request() returns jsonb
-language sql stable security definer set search_path = public as $$
-  select jsonb_build_object('team_id', r.team_id, 'team_name', t.name, 'name', r.name, 'created_at', r.created_at)
-  from join_requests r join teams t on t.id = r.team_id where r.user_id = auth.uid()
-$$;
-
-create or replace function cancel_request() returns void
-language sql security definer set search_path = public as
-$$ delete from join_requests where user_id = auth.uid() $$;
-
-create or replace function team_requests() returns jsonb
-language plpgsql stable security definer set search_path = public as $$
-begin
-  if not is_staff() then return '[]'::jsonb; end if;
-  return coalesce((select jsonb_agg(jsonb_build_object('user_id', user_id, 'name', name, 'email', email,
-           'created_at', created_at) order by created_at)
-         from join_requests where team_id = my_team()), '[]'::jsonb);
-end $$;
-
-create or replace function approve_request(p_user uuid) returns void
-language plpgsql security definer set search_path = public as $$
-declare t uuid := my_team();
-begin
-  if not is_staff() then raise exception 'not_allowed'; end if;
-  if not exists (select 1 from join_requests where user_id = p_user and team_id = t) then raise exception 'no_request'; end if;
-  insert into profiles (user_id, team_id) values (p_user, t) on conflict (user_id) do nothing;
-  delete from join_requests where user_id = p_user;
-end $$;
-
-create or replace function decline_request(p_user uuid) returns void
-language plpgsql security definer set search_path = public as $$
-begin
-  if not is_staff() then raise exception 'not_allowed'; end if;
-  delete from join_requests where user_id = p_user and team_id = my_team();
-end $$;
-
-revoke all on function search_teams(text) from public, anon;
-revoke all on function request_join(uuid, text) from public, anon;
-revoke all on function my_request() from public, anon;
-revoke all on function cancel_request() from public, anon;
-revoke all on function team_requests() from public, anon;
-revoke all on function approve_request(uuid) from public, anon;
-revoke all on function decline_request(uuid) from public, anon;
-grant execute on function search_teams(text), request_join(uuid, text), my_request(), cancel_request(),
-  team_requests(), approve_request(uuid), decline_request(uuid) to authenticated;
-
 -- ---------- доступ к функциям ----------
-revoke all on function create_team(text) from public, anon;
-revoke all on function join_team(text) from public, anon;
+revoke all on function create_team(text, text) from public, anon;
+revoke all on function join_team(text, text) from public, anon;
+revoke all on function set_team_password(text) from public, anon;
 revoke all on function team_info() from public, anon;
 revoke all on function leave_team() from public, anon;
-revoke all on function regen_team_code() from public, anon;
 revoke all on function remove_member(uuid) from public, anon;
 revoke all on function kv_list_add(text, jsonb) from public, anon;
 revoke all on function kv_list_remove(text, text) from public, anon;
 revoke all on function claim_task(text, jsonb) from public, anon;
 revoke all on function can_be_staff() from public, anon;
-grant execute on function create_team(text), join_team(text), team_info(), leave_team(),
-  regen_team_code(), remove_member(uuid), kv_list_add(text, jsonb), kv_list_remove(text, text),
+grant execute on function create_team(text, text), join_team(text, text), set_team_password(text),
+  team_info(), leave_team(), remove_member(uuid), kv_list_add(text, jsonb), kv_list_remove(text, text),
   claim_task(text, jsonb), can_be_staff() to authenticated;
 
 -- ---------- живое обновление ----------
@@ -411,7 +344,7 @@ create policy videos_upload on storage.objects for insert to authenticated with 
 --   select 'mentor@gmail.com', id from teams where name = 'PEAK'
 -- on conflict (email) do update set team_id = excluded.team_id;
 
--- Команды и число участников (покажется после запуска):
+-- Команды, число участников и задан ли пароль (покажется после запуска):
 select t.name, (select count(*) from profiles p where p.team_id = t.id) as members,
-       (select count(*) from join_requests r where r.team_id = t.id) as pending_requests
+       t.pass_hash is not null as has_password
 from teams t order by t.created_at;
