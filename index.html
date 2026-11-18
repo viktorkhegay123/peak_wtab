@@ -351,6 +351,32 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
 .gbtn{margin-top:10px}
 .chk{display:block;margin:10px 0 0;font-size:14px;color:var(--muted)}
 .chk input{margin-right:6px}
+/* команды */
+body[data-gate="team"] .tabs,body[data-gate="team"] .panel{display:none!important}
+.tg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tg-card{background:var(--surface2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tg-card h3{font:600 15px/1.2 var(--font-display)}
+.tg-card p{margin:0}
+.tg-card input{background:var(--surface);font-size:16px}
+.tg-card .btn{align-self:flex-start}
+#join-code{font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.teaminfo{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;margin-bottom:14px}
+.teaminfo .tname{flex:1 1 220px;min-width:0}
+.teaminfo .tname h2{margin:0 0 4px;overflow-wrap:anywhere}
+.tcode{font:700 24px/1.1 var(--font-mono);letter-spacing:.08em}
+.mcard .acts select{flex:1 1 140px;font-size:13px;padding:5px 8px}
+.gate-out{margin-top:14px}
+/* таймер матча */
+.tm-num{font:600 clamp(64px,15vw,104px)/1 var(--font-mono);text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.02em;padding:4px 0 12px;color:var(--ink)}
+.tm-bar{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-bottom:14px}
+.tm-bar i{display:block;height:100%;width:100%;background:var(--g);transition:width .25s linear}
+.timer.tm-warn .tm-num{color:var(--y)}.timer.tm-warn .tm-bar i{background:var(--y)}
+.timer.tm-crit .tm-num,.timer.tm-done .tm-num{color:var(--r)}.timer.tm-crit .tm-bar i{background:var(--r)}
+.tm-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tm-acts .btn{flex:1 1 120px;padding:12px 14px;font-size:16px}
+.tm-snd{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer}
+.tm-snd input{width:18px;height:18px;accent-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.tm-bar i{transition:none}}
 </style>
 </head>
 <body>
@@ -362,9 +388,9 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
   </header></div>
   <div id="banner" class="banner" hidden></div>
   <section class="box" id="pw-box" hidden>
-    <h2>Сменить пароль</h2>
+    <h2 id="pw-head">Сменить пароль</h2>
     <form class="loginform" id="f-pw" style="grid-template-columns:minmax(0,1fr) auto auto">
-      <input id="pw-new" type="text" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="6" placeholder="Новый пароль (от 6 символов)" aria-label="Новый пароль" required>
+      <input id="pw-new" type="password" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="6" placeholder="Новый пароль (от 6 символов)" aria-label="Новый пароль" required>
       <button class="btn" type="submit">Сохранить</button>
       <button class="btn ghost" type="button" id="pw-cancel">Отмена</button>
     </form>
@@ -383,11 +409,32 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
     <label class="chk"><input type="checkbox" id="login-show"> Показать пароль</label>
     <button class="btn ghost gbtn" id="login-signup" type="button">Создать аккаунт</button>
     <button class="linkbtn" id="login-link" type="button" style="margin-left:12px">Войти по ссылке из письма</button>
+    <button class="linkbtn" id="login-forgot" type="button" style="margin-left:12px">Забыли пароль?</button>
     <button class="btn ghost gbtn" id="login-google" type="button" hidden>Войти через Google</button>
     <div class="reg-note" id="login-msg"></div>
   </section>
+  <section class="box reg" id="teamgate" hidden>
+    <h2>Ваша команда</h2>
+    <p>У каждой команды своё отдельное пространство: другие команды не видят ваши задачи, заезды и видео.</p>
+    <div class="tg-grid">
+      <form class="tg-card" id="f-join">
+        <h3>Вступить по коду</h3>
+        <p class="tnote">Код даёт капитан или ментор. Он выглядит так: K7QM-2XWD.</p>
+        <input id="join-code" maxlength="12" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Код команды" aria-label="Код команды" required>
+        <button class="btn" type="submit">Вступить</button>
+      </form>
+      <form class="tg-card" id="f-newteam">
+        <h3>Создать команду</h3>
+        <p class="tnote">Вы станете капитаном или ментором и получите код, чтобы пригласить остальных.</p>
+        <input id="team-name" maxlength="60" placeholder="Название команды" aria-label="Название команды" required>
+        <button class="btn ghost" type="submit">Создать</button>
+      </form>
+    </div>
+    <div class="reg-note" id="team-msg"></div>
+    <div class="gate-out"><button class="linkbtn" type="button" data-act="logout">Выйти из аккаунта</button></div>
+  </section>
   <section class="box reg" id="reg" hidden>
-    <img class="reg-photo" src="photos/01.jpg" alt="Команда PEAK у игрового стола" onerror="this.remove()">
+    <img class="reg-photo" src="photos/01.jpg" alt="Команда у игрового стола" onerror="this.remove()">
     <h2>Регистрация в команде</h2>
     <p>Выберите роль один раз: она закрепляется за вашим аккаунтом и сама не меняется. Если ошиблись, роль сбросит капитан или ментор.</p>
     <form class="regform" id="f-reg">
@@ -396,6 +443,7 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
       <button class="btn" id="reg-btn" type="submit">Зарегистрироваться</button>
     </form>
     <div class="reg-note" id="reg-hint"></div>
+    <div class="gate-out"><button class="linkbtn" type="button" data-act="logout">Выйти из аккаунта</button></div>
   </section>
 
   <nav class="tabs" aria-label="Разделы">
@@ -431,6 +479,16 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
     <div class="banner-photo slim"><img src="photos/05.jpg" alt="" onerror="this.parentNode.remove()"><span>Тренировка</span></div>
     <div class="match">
       <div class="stack">
+      <div class="box timer" id="timer">
+        <div class="score-head" style="margin-bottom:6px"><h2 style="margin:0">Таймер матча</h2><span class="dtm" id="tm-state">2:30, как на турнире</span></div>
+        <div class="tm-num" id="tm-num" role="timer" aria-live="off">2:30</div>
+        <div class="tm-bar" aria-hidden="true"><i id="tm-bar"></i></div>
+        <div class="tm-acts">
+          <button class="btn" id="tm-go" type="button">Старт</button>
+          <button class="btn ghost" id="tm-reset" type="button">Сброс</button>
+          <label class="tm-snd"><input type="checkbox" id="tm-sound" checked> Звук</label>
+        </div>
+      </div>
       <div class="box">
         <div class="score-head" style="margin-bottom:10px"><h2 style="margin:0">Чек-лист перед заездом</h2><span class="chk-status" id="chk-status"></span></div>
         <div class="chk" id="chk"></div>
@@ -487,7 +545,8 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
 
   <!-- КОМАНДА -->
   <section id="tab-team" class="panel">
-    <div class="banner-photo"><img src="photos/09.jpg" alt="Команда PEAK у игрового стола" onerror="this.parentNode.remove()"><span>PEAK · Kazakhstan</span></div>
+    <div class="banner-photo"><img src="photos/09.jpg" alt="Команда у игрового стола" onerror="this.parentNode.remove()"><span id="team-banner">Команда</span></div>
+    <div class="box" id="team-info" style="margin-bottom:14px" hidden></div>
     <div class="team" id="team"></div>
   </section>
 
@@ -506,7 +565,7 @@ body[data-gate="auth"] .tabs,body[data-gate="auth"] .panel{display:none!importan
     </div>
     <div class="cvlist" id="cv-list"></div>
   </section>
-  <footer class="strip"><div class="pics" id="strip-pics"></div>PEAK · Kazakhstan · FIRST LEGO League</footer>
+  <footer class="strip"><div class="pics" id="strip-pics"></div><span id="foot-team">Штаб FLL</span> · FIRST LEGO League</footer>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 <input type="file" id="vid-file" accept="video/*" hidden>
@@ -572,6 +631,7 @@ function renderCapNote(){
   else n.textContent='Здесь свободные задачи от капитана и ментора. Возьмите задачу, и она исчезнет у остальных. Когда сделаете, сдайте её на проверку.';
 }
 function guard(){if(!db){toast('Нет связи с общим хранилищем');return false}return true}
+function canDel(x){return isStaff()||(!!uid&&x&&x.uid===uid)}
 var refreshAll=function(){return Promise.resolve()};
 async function safe(fn){try{await fn();refreshAll()}catch(e){toast('Не удалось сохранить: '+((e&&e.message)||'ошибка'));refreshAll()}}
 
@@ -765,7 +825,7 @@ function renderLog(){
   if(!rows.length){$('#runs').innerHTML='<div class="empty">Журнал пуст. Впишите баллы выше и нажмите «Записать заезд»: запись появится здесь с датой и временем.</div>';return}
   $('#runs').innerHTML='<table class="runs"><thead><tr><th>Дата и время</th><th>Баллы</th><th>Кто вёл</th><th>Заметка</th><th>Видео</th><th></th></tr></thead><tbody>'+rows.map(function(r){
     var armed=delArm==='r:'+r.id;
-    return '<tr data-id="'+esc(r.id)+'"'+(r.id===playId?' class="sel"':'')+'><td class="dtm">'+esc(fmtTs(r.ts))+'</td><td>'+badge(r.score)+'</td><td>'+esc(r.driver)+'</td><td>'+esc(r.note)+'</td><td>'+videoCell(r)+'</td><td><button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="run-del" data-id="'+esc(r.id)+'">'+(armed?'Точно?':'Удалить')+'</button></td></tr>';
+    return '<tr data-id="'+esc(r.id)+'"'+(r.id===playId?' class="sel"':'')+'><td class="dtm">'+esc(fmtTs(r.ts))+'</td><td>'+badge(r.score)+'</td><td>'+esc(r.driver)+'</td><td>'+esc(r.note)+'</td><td>'+videoCell(r)+'</td><td>'+(canDel(r)?'<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="run-del" data-id="'+esc(r.id)+'">'+(armed?'Точно?':'Удалить')+'</button>':'')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
 
@@ -834,7 +894,7 @@ function renderCV(){
   if(!list.length){el.innerHTML='<div class="empty">'+(cvList.length?'По этой ценности записей пока нет. Красная цифра наверху показывает, каких примеров не хватает.':'Здесь собираются истории о том, как команда проявляет ценности FLL. Судьи на оценке Core Values спрашивают конкретные примеры, а эти записи будут готовыми ответами.')+'</div>';return}
   el.innerHTML=list.map(function(c){
     var armed=delArm==='cv:'+c.id;
-    return '<article class="cvcard"><span class="cvtag">'+esc((CV[c.value]||['Другое'])[0])+'</span><p>'+esc(c.text)+'</p><div class="meta"><span>'+esc(c.author||'Без имени')+'</span><span class="due">'+esc(fmtTs(c.ts))+'</span><button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="cv-del" data-id="'+esc(c.id)+'" style="margin-left:auto">'+(armed?'Точно удалить?':'Удалить')+'</button></div></article>';
+    return '<article class="cvcard"><span class="cvtag">'+esc((CV[c.value]||['Другое'])[0])+'</span><p>'+esc(c.text)+'</p><div class="meta"><span>'+esc(c.author||'Без имени')+'</span><span class="due">'+esc(fmtTs(c.ts))+'</span>'+(canDel(c)?'<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="cv-del" data-id="'+esc(c.id)+'" style="margin-left:auto">'+(armed?'Точно удалить?':'Удалить')+'</button>':'')+'</div></article>';
   }).join('');
 }
 
@@ -925,13 +985,13 @@ var STAFF={cap:1,mentor:1};
 var ROLE_ORDER=['cap','mentor','pm','eng','code','build','design'];
 var ROLE_INFO={cap:'Капитан ставит задачи, видит, кто какие взял, и принимает выполненное.',mentor:'Ментор видит всё, ставит задачи и проверяет всех.'};
 var ROLE_DEF='Вы видите все тренировки, видео и Core Values, берёте свободные задачи и сдаёте их на проверку.';
-var uid=null, members={}, me=null, regArm=null, gateTimeout=false;
+var uid=null, team=null, members={}, me=null, regArm=null, gateTimeout=false;
 loaded.members=false;
 function registered(){return !!(me&&ROLES[me.role]&&me.name)}
 function isStaff(){return !!(isAdmin&&registered()&&STAFF[me.role])}
 function initial(n){return esc((n||'?').trim().charAt(0).toUpperCase()||'?')}
-function localReg(){try{var o=JSON.parse(store.get('fll-reg')||'null');return o&&o.uid&&ROLES[o.role]&&o.name?o:null}catch(e){return null}}
-function saveLocalReg(m){if(uid&&m&&ROLES[m.role]&&m.name)store.set('fll-reg',JSON.stringify({uid:uid,name:m.name,role:m.role}))}
+function localReg(){try{var o=JSON.parse(store.get('fll-reg')||'null');return o&&o.uid&&team&&o.uid===uid&&o.team===team.id&&ROLES[o.role]&&o.name?o:null}catch(e){return null}}
+function saveLocalReg(m){if(uid&&team&&m&&ROLES[m.role]&&m.name)store.set('fll-reg',JSON.stringify({uid:uid,team:team.id,name:m.name,role:m.role}))}
 function setGate(){
   var g='ok';
   if(db&&uid&&!registered()){g=(!loaded.members&&!gateTimeout)?'loading':'reg'}
@@ -946,12 +1006,12 @@ function renderRegBtn(){
   }else{
     btn.textContent='Зарегистрироваться';
     note.className='reg-note';
-    note.textContent=(ROLE_INFO[role]||ROLE_DEF)+(canStaff?'':' Роли капитана и ментора выдаются по списку почт, который ведёт администратор сайта.');
+    note.textContent=(ROLE_INFO[role]||ROLE_DEF)+(canStaff?'':' Роль капитана или ментора выбирает создатель команды, остальным её назначает капитан или ментор на вкладке «Команда».');
   }
 }
 function renderMe(){
   var sel=$('#reg-role');
-  if(!sel.options.length){sel.innerHTML=Object.keys(ROLES).filter(function(k){return !STAFF[k]||canStaff}).map(function(k){return '<option value="'+k+'">'+ROLES[k]+'</option>'}).join('');renderRegBtn()}
+  if(sel.dataset.k!==String(canStaff)){sel.dataset.k=String(canStaff);sel.innerHTML=Object.keys(ROLES).filter(function(k){return !STAFF[k]||canStaff}).map(function(k){return '<option value="'+k+'">'+ROLES[k]+'</option>'}).join('');if(canStaff)sel.value='cap';regArm=null;renderRegBtn()}
   var g=setGate();
   $('#reg').hidden=g!=='reg';
   $('#mechip').innerHTML=registered()?'<span class="mechip r-'+me.role+'"><span class="av">'+initial(me.name)+'</span>'+esc(me.name)+' · '+ROLES[me.role]+' <button class="linkbtn" type="button" data-act="pw">Пароль</button> <button class="linkbtn" type="button" data-act="logout">Выйти</button></span>':'';
@@ -959,7 +1019,21 @@ function renderMe(){
   if(registered()){var dr=$('#q-driver');if(dr&&!dr.value)dr.value=me.name}
   $('#cnt-team').textContent=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).length;
 }
+function fmtCode(c){c=String(c||'');return c.length===8?c.slice(0,4)+'-'+c.slice(4):c}
+function inviteUrl(){return location.origin+location.pathname+'?team='+encodeURIComponent(team?team.code:'')}
+function renderTeamInfo(){
+  var el=$('#team-info');
+  if(!team){el.hidden=true;return}
+  el.hidden=false;
+  var staff=isStaff(),rg=delArm==='team-regen',lv=delArm==='team-leave';
+  el.innerHTML='<div class="teaminfo"><div class="tname"><h2>'+esc(team.name)+'</h2><div class="tnote">Чтобы пригласить участника, отправьте ему ссылку-приглашение или код. Код знают только участники команды.</div></div>'+
+    '<div><div class="tnote">Код команды</div><div class="tcode">'+esc(fmtCode(team.code))+'</div></div></div>'+
+    '<div class="acts"><button class="btn small" type="button" data-act="team-copy">Скопировать приглашение</button>'+
+    (staff?'<button class="btn '+(rg?'danger':'ghost')+' small" type="button" data-act="team-regen">'+(rg?'Точно сменить? Старый код перестанет работать':'Сменить код')+'</button><button class="btn ghost small" type="button" data-act="team-export">Скачать копию данных</button>':'')+
+    '<button class="btn '+(lv?'danger':'ghost')+' small" type="button" data-act="team-leave">'+(lv?'Точно выйти из команды?':'Выйти из команды')+'</button></div>';
+}
 function renderTeam(){
+  renderTeamInfo();
   var el=$('#team'),staff=isStaff();
   var ids=Object.keys(members).filter(function(k){return ROLES[members[k].role]}).sort(function(a,b){var d=ROLE_ORDER.indexOf(members[a].role)-ROLE_ORDER.indexOf(members[b].role);return d||String(members[a].name).localeCompare(String(members[b].name))});
   if(!ids.length){el.innerHTML='<div class="box empty" style="grid-column:1/-1">'+(db?'Пока никто не зарегистрировался. Каждый участник при первом входе указывает имя и роль, и карточка появится здесь.':'')+'</div>';return}
@@ -975,7 +1049,13 @@ function renderTeam(){
     var extra='';
     if(staff){
       extra='<ul class="mtasks">'+(mt.length?mt.map(function(t){return '<li><span class="st st-'+t.status+'">'+STN[t.status]+'</span>'+esc(t.title)+'</li>'}).join(''):'<li class="none">Задач нет</li>')+'</ul>';
-      if(id!==uid){var armed=delArm==='m:'+id;extra+='<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="mem-reset" data-id="'+esc(id)+'">'+(armed?'Точно сбросить?':'Сбросить регистрацию')+'</button>'}
+      if(id!==uid){
+        var armed=delArm==='m:'+id,karm=delArm==='k:'+id;
+        var ro=Object.keys(ROLES).map(function(k){return '<option value="'+k+'"'+(k===r?' selected':'')+'>'+ROLES[k]+'</option>'}).join('');
+        extra+='<div class="acts"><select class="setrole" data-id="'+esc(id)+'" aria-label="Роль участника">'+ro+'</select></div><div class="acts">'+
+          '<button class="btn '+(armed?'danger':'ghost')+' small" type="button" data-act="mem-reset" data-id="'+esc(id)+'">'+(armed?'Точно сбросить?':'Сбросить регистрацию')+'</button>'+
+          '<button class="btn '+(karm?'danger':'ghost')+' small" type="button" data-act="mem-kick" data-id="'+esc(id)+'">'+(karm?'Точно убрать?':'Убрать из команды')+'</button></div>';
+      }
     }
     return '<article class="box mcard r-'+r+'"><div class="top2"><span class="av">'+initial(m.name)+'</span><div><b>'+esc(m.name||'Без имени')+'</b>'+(id===uid?'<span class="you">это вы</span>':'')+'<div><span class="rolepill">'+ROLES[r]+'</span></div></div></div><div class="mnums">'+nums+'</div>'+extra+'</article>';
   }).join('');
@@ -993,13 +1073,35 @@ document.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;
   var act=b.dataset.act,id=b.dataset.id;
   if(act==='pw'){var bx=$('#pw-box');bx.hidden=!bx.hidden;$('#pw-msg').textContent='';if(!bx.hidden)$('#pw-new').focus();return}
-  if(act==='logout'){sb.auth.signOut().then(function(){store.set('fll-reg','');location.reload()});return}
+  if(act==='logout'){if(!sb){location.reload();return}sb.auth.signOut().then(function(){store.set('fll-reg','');location.reload()});return}
+  if(act==='team-copy'){
+    var inv='Вступай в команду «'+team.name+'» в Штабе FLL: '+inviteUrl()+' (код '+fmtCode(team.code)+')';
+    var done=function(){toast('Приглашение скопировано: отправьте его в чат команды')};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(inv).then(done,function(){prompt('Скопируйте приглашение:',inv)});
+    else prompt('Скопируйте приглашение:',inv);
+    return}
+  if(act==='team-regen'){
+    if(delArm!=='team-regen'){armDelete('team-regen');return}
+    if(!guardStaff())return;delArm=null;
+    sb.rpc('regen_team_code').then(function(r){if(r.error)throw r.error;team.code=r.data;renderTeamInfo();toast('Новый код: '+fmtCode(r.data)+'. Старый больше не работает.')}).catch(function(e){toast('Не удалось сменить код: '+rpcErr(e))});
+    return}
+  if(act==='team-export'){if(!guardStaff())return;exportTeam();return}
+  if(act==='team-leave'){
+    if(delArm!=='team-leave'){armDelete('team-leave');return}
+    delArm=null;
+    sb.rpc('leave_team').then(function(r){if(r.error)throw r.error;store.set('fll-reg','');location.href=location.pathname}).catch(function(e){toast('Не удалось выйти: '+rpcErr(e))});
+    return}
+  if(act==='mem-kick'){
+    var kk='k:'+id;if(delArm!==kk){armDelete(kk);return}
+    if(!guardStaff())return;delArm=null;
+    sb.rpc('remove_member',{p_user:id}).then(function(r){if(r.error)throw r.error;delete members[id];renderTeam();renderMe();toast('Участник убран из команды. Если код мог попасть к чужим, смените его.');refreshAll()}).catch(function(e){toast('Не удалось убрать: '+rpcErr(e))});
+    return}
   if(act==='filter'){filter=b.dataset.f;renderChips();renderTasks();return}
   if(act==='play'){playId=id;renderPlayer(true);var pl=$('#player');try{pl.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){pl.scrollIntoView()}var v=pl.querySelector('video');if(v){try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}catch(e){}}document.querySelectorAll('.runs tbody tr').forEach(function(tr){tr.classList.toggle('sel',tr.dataset.id===id)});return}
   if(act==='run-vid'){if(!guard())return;vidRun=id;$('#vid-file').click();return}
   if(act==='chk-cfg'){chkCfg=!chkCfg;renderChecklist();if(chkCfg)$('#chk-text').focus();return}
   if(act==='chk-clear'){ticks={};store.set('fll-ticks','{}');renderChecklist();return}
-  if(act==='chk-rm'){e.preventDefault();if(!guard())return;var rest2=checklist.filter(function(x){return x.id!==id});safe(function(){return db.doc('settings/checklist').set({items:rest2})});return}
+  if(act==='chk-rm'){e.preventDefault();if(!guard())return;checklist=checklist.filter(function(x){return x.id!==id});renderChecklist();safe(function(){return db.listRemove('checklist',id)});return}
   if(act==='goal-edit'){goalEditing=true;renderGoal();var gv=$('#goal-val');if(gv)gv.focus();return}
   if(act==='goal-cancel'){goalEditing=false;renderGoal();return}
   if(act==='cv-filter'){cvFilter=b.dataset.f;renderCV();return}
@@ -1042,8 +1144,8 @@ document.addEventListener('click',function(e){
     var inp=document.getElementById('mi-'+id);if(inp)inp.value=pts[id];updateTotal();return}
   if(act==='rm-mission'){
     if(!guard())return;
-    var rest=missions.filter(function(x){return x.id!==id});
-    safe(function(){return db.doc('settings/missions').set({items:rest})});return}
+    missions=missions.filter(function(x){return x.id!==id});renderMissions();
+    safe(function(){return db.listRemove('missions',id)});return}
   if(act==='run-del'){
     var key='r:'+id;
     if(delArm!==key){armDelete(key);return}
@@ -1090,8 +1192,9 @@ document.addEventListener('submit',function(e){
   }
   if(f==='f-chk'){
     if(!guard())return;var tx=$('#chk-text').value.trim();if(!tx)return;
-    var it=checklist.concat([{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),text:tx}]);
-    safe(function(){return db.doc('settings/checklist').set({items:it})});$('#chk-text').value='';$('#chk-text').focus();
+    var ci={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),text:tx};
+    checklist=checklist.concat([ci]);renderChecklist();
+    safe(function(){return db.listAdd('checklist',ci)});$('#chk-text').value='';$('#chk-text').focus();
   }
   if(f==='f-goal'){
     if(!guard())return;var gv=parseInt($('#goal-val').value,10);if(!(gv>0))return;
@@ -1099,7 +1202,7 @@ document.addEventListener('submit',function(e){
   }
   if(f==='f-cv'){
     if(!guard())return;var txt=$('#cv-text').value.trim();if(!txt)return;
-    var cr={value:$('#cv-val').value,text:txt,author:$('#cv-author').value.trim()||myName,ts:Date.now()};
+    var cr={value:$('#cv-val').value,text:txt,author:$('#cv-author').value.trim()||myName,ts:Date.now(),uid:uid};
     cvList.push(Object.assign({id:'tmp'+Date.now()},cr));loaded.cv=true;renderCV();
     safe(function(){return db.collection('cv').add(cr)});$('#cv-text').value='';toast('Запись сохранена');
   }
@@ -1107,8 +1210,9 @@ document.addEventListener('submit',function(e){
     if(!guard())return;
     var name=$('#m-name').value.trim();var per=Math.max(1,parseInt($('#m-per').value,10)||0);var cnt=Math.max(1,parseInt($('#m-cnt').value,10)||0);
     if(!name)return;
-    var items=missions.concat([{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,per:per,count:cnt}]);
-    safe(function(){return db.doc('settings/missions').set({items:items})});
+    var mi={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,per:per,count:cnt};
+    missions=missions.concat([mi]);renderMissions();
+    safe(function(){return db.listAdd('missions',mi)});
     $('#m-name').value='';$('#m-cnt').value='1';$('#m-name').focus();
   }
 
@@ -1125,6 +1229,10 @@ document.addEventListener('input',function(e){
 });
 document.addEventListener('change',function(e){
   if(e.target.id==='reg-role'){regArm=null;renderRegBtn();return}
+  if(e.target.classList&&e.target.classList.contains('setrole')){
+    var rid2=e.target.dataset.id,nr=e.target.value;if(!guardStaff()||!members[rid2]||!ROLES[nr])return;
+    members[rid2]=Object.assign({},members[rid2],{role:nr});renderTeam();
+    safe(function(){return db.doc('members/'+rid2).update({role:nr})});toast('Роль изменена: '+ROLES[nr]);return}
   if(e.target.classList&&e.target.classList.contains('assign')){
     var mid=e.target.value,tid=e.target.dataset.id;if(!mid)return;
     if(!guardStaff())return;var am=members[mid];if(!am)return;
@@ -1139,7 +1247,7 @@ $('#q-save').addEventListener('click',function(){
   var sc=parseInt($('#q-score').value,10);
   if(isNaN(sc)||sc<0){toast('Введите баллы за заезд');$('#q-score').focus();return}
   if(!guard())return;
-  var rec={ts:Date.now(),score:sc,driver:$('#q-driver').value.trim()||myName,note:$('#q-note').value.trim()};
+  var rec={ts:Date.now(),score:sc,driver:$('#q-driver').value.trim()||myName,note:$('#q-note').value.trim(),uid:uid};
   var tt=totals();
   if(missions.length&&tt.s===sc&&sc>0){rec.missions={};missions.forEach(function(m){rec.missions[m.id]=units(m)})}
   if(checklist.length)rec.checklist=chkDone()+'/'+checklist.length;
@@ -1164,6 +1272,63 @@ $('#m-fill').addEventListener('click',function(){
 });
 
 
+/* ---------- таймер матча 2:30 ---------- */
+(function(){
+  var FULL=150000,left=FULL,end=0,running=false,tick=null,beeped={},lock=null,actx=null;
+  var num=$('#tm-num'),bar=$('#tm-bar'),go=$('#tm-go'),stEl=$('#tm-state'),box=$('#timer'),snd=$('#tm-sound');
+  try{snd.checked=store.get('fll-tm-sound')!=='0'}catch(e){}
+  snd.addEventListener('change',function(){store.set('fll-tm-sound',snd.checked?'1':'0')});
+  function fmt(ms){var s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+pad(s%60)}
+  function beep(freq,dur,vol){
+    if(!snd.checked)return;
+    try{
+      actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==='suspended')actx.resume();
+      var o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;
+      o.type='square';o.frequency.value=freq;
+      g.gain.setValueAtTime(vol||0.12,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+dur+0.02);
+    }catch(e){}
+  }
+  function wake(on){
+    try{
+      if(on&&navigator.wakeLock&&!lock)navigator.wakeLock.request('screen').then(function(l){lock=l;l.addEventListener('release',function(){lock=null})}).catch(function(){});
+      if(!on&&lock){lock.release();lock=null}
+    }catch(e){}
+  }
+  function now(){return running?Math.max(0,end-Date.now()):left}
+  function paint(){
+    var l=now(),s=Math.ceil(l/1000);
+    num.textContent=fmt(l);
+    bar.style.width=(l/FULL*100)+'%';
+    box.classList.toggle('tm-warn',l<=30000&&l>10000);
+    box.classList.toggle('tm-crit',l<=10000&&l>0);
+    box.classList.toggle('tm-done',l===0);
+    go.textContent=running?'Пауза':(l===0?'Заново':(l<FULL?'Продолжить':'Старт'));
+    stEl.textContent=running?'идёт матч':(l===0?'время вышло':(l<FULL?'пауза':'2:30, как на турнире'));
+    if(!running)return;
+    if(s===30&&!beeped[30]){beeped[30]=1;beep(880,0.25)}
+    if(s<=3&&s>=1&&!beeped[s]){beeped[s]=1;beep(660,0.12)}
+    if(l===0){
+      running=false;left=0;clearInterval(tick);tick=null;wake(false);
+      beep(440,1.1,0.18);num.setAttribute('aria-live','assertive');toast('Время матча вышло');
+      if(navigator.vibrate)try{navigator.vibrate([300,120,300])}catch(e){}
+      paint();
+    }
+  }
+  function startT(){
+    if(left===0){left=FULL;beeped={}}
+    end=Date.now()+left;running=true;num.setAttribute('aria-live','off');
+    if(left===FULL)beep(990,0.18);
+    clearInterval(tick);tick=setInterval(paint,200);wake(true);paint();
+  }
+  function pauseT(){left=now();running=false;clearInterval(tick);tick=null;wake(false);paint()}
+  go.addEventListener('click',function(){running?pauseT():startT()});
+  $('#tm-reset').addEventListener('click',function(){running=false;clearInterval(tick);tick=null;left=FULL;beeped={};wake(false);paint()});
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){paint();if(running)wake(true)}});
+  paint();
+})();
+
 /* ---------- фото-оформление ---------- */
 (function(){
   var hp=document.getElementById('hero-photo');
@@ -1179,7 +1344,7 @@ function authErr(err){var t=(err&&err.message)||'ошибка';
   if(/invalid login/i.test(t))return 'Неверная почта или пароль. Если вы здесь впервые, нажмите «Создать аккаунт».';
   if(/already registered|already been registered/i.test(t))return 'Такая почта уже зарегистрирована. Введите пароль и нажмите «Войти».';
   if(/at least|weak|short/i.test(t))return 'Пароль слишком короткий: нужно минимум 6 символов.';
-  if(/not confirmed/i.test(t))return 'Почта не подтверждена. Администратору нужно выключить «Confirm email» в Supabase.';
+  if(/not confirmed/i.test(t))return 'Почта ещё не подтверждена. Откройте письмо от сайта и нажмите ссылку, потом войдите. Письма нет? Проверьте «Спам» или нажмите «Войти по ссылке из письма».';
   if(/rate limit|after \d+ seconds/i.test(t))return 'Слишком много попыток. Подождите минуту.';
   return 'Не получилось: '+t}
 function loginVals(){return {em:$('#login-email').value.trim().toLowerCase(),pw:$('#login-pass').value}}
@@ -1196,7 +1361,7 @@ $('#login-signup').addEventListener('click',async function(){
   var b=this;b.disabled=true;loginMsg('Создаю аккаунт…');
   try{var r=await sb.auth.signUp({email:v.em,password:v.pw,options:{emailRedirectTo:location.origin+location.pathname}});
     if(r.error)throw r.error;
-    if(!r.data||!r.data.session){loginMsg('Аккаунт создан, но Supabase просит подтвердить почту. Откройте письмо или отключите «Confirm email» в настройках.',true)}
+    if(!r.data||!r.data.session){loginMsg('Аккаунт создан. Мы отправили письмо на '+v.em+': откройте его и нажмите ссылку, чтобы подтвердить почту. Потом вернитесь сюда и нажмите «Войти».',true)}
   }catch(err){loginMsg(authErr(err))}finally{b.disabled=false}
 });
 $('#login-link').addEventListener('click',async function(){
@@ -1204,6 +1369,13 @@ $('#login-link').addEventListener('click',async function(){
   loginMsg('Отправляю…');
   try{var r=await sb.auth.signInWithOtp({email:v.em,options:{emailRedirectTo:location.origin+location.pathname}});if(r.error)throw r.error;
     loginMsg('Письмо отправлено на '+v.em+'. Откройте ссылку в этом же браузере.',true)}
+  catch(err){loginMsg(authErr(err))}
+});
+$('#login-forgot').addEventListener('click',async function(){
+  var v=loginVals();if(!v.em||!sb){loginMsg('Введите почту, на которую зарегистрирован аккаунт, и нажмите «Забыли пароль?» ещё раз.');$('#login-email').focus();return}
+  loginMsg('Отправляю…');
+  try{var r=await sb.auth.resetPasswordForEmail(v.em,{redirectTo:location.origin+location.pathname});if(r.error)throw r.error;
+    loginMsg('Если аккаунт с почтой '+v.em+' есть, на неё пришло письмо. Откройте ссылку в этом же браузере и придумайте новый пароль. Все ваши данные сохранятся.',true)}
   catch(err){loginMsg(authErr(err))}
 });
 $('#login-google').addEventListener('click',function(){if(sb)sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})});
@@ -1214,9 +1386,10 @@ $('#f-pw').addEventListener('submit',async function(e){
   e.preventDefault();var v=$('#pw-new').value,m=$('#pw-msg');
   if(v.length<6){m.textContent='Нужно минимум 6 символов.';return}
   m.textContent='Сохраняю…';
-  try{var r=await sb.auth.updateUser({password:v});if(r.error)throw r.error;m.textContent='Готово. Новый пароль: «'+v+'». Запомните его: на другом устройстве войдите с ним.';$('#pw-new').value=''}
+  try{var r=await sb.auth.updateUser({password:v});if(r.error)throw r.error;m.textContent='Готово, пароль изменён. На других устройствах входите с новым паролем.';$('#pw-new').value='';$('#pw-head').textContent='Сменить пароль'}
   catch(err){m.textContent='Не получилось: '+((err&&err.message)||'ошибка')}
 });
+function showRecovery(){var bx=$('#pw-box');bx.hidden=false;$('#pw-head').textContent='Придумайте новый пароль';$('#pw-msg').textContent='Вы вошли по ссылке для сброса пароля. Введите новый пароль и нажмите «Сохранить».';$('#pw-new').focus()}
 
 /* ---------- вкладки ---------- */
 function route(){
@@ -1230,25 +1403,25 @@ window.addEventListener('hashchange',route);
 
 /* ---------- доступ к базе (Supabase) ---------- */
 var sb=null, started=false, canStaff=false;
-function makeDb(sb){
+function makeDb(sb,T){
   var META={fromCache:false,hasPendingWrites:false};
   function dsnap(id,d){return {id:id,exists:d!=null,data:function(){return d==null?undefined:d},metadata:META}}
   function parse(p){var i=p.indexOf('/');return [p.slice(0,i),p.slice(i+1)]}
   function rid(){return (window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()).replace(/-/g,'').slice(0,20)}
   async function getColl(c){
-    var r=await sb.from('kv').select('id,data').eq('coll',c);if(r.error)throw r.error;
+    var r=await sb.from('kv').select('id,data').eq('team',T).eq('coll',c);if(r.error)throw r.error;
     var docs=(r.data||[]).map(function(x){return dsnap(x.id,x.data)});
     return {docs:docs,size:docs.length,empty:!docs.length,metadata:META};
   }
   async function getDoc(c,id){
-    var r=await sb.from('kv').select('id,data').eq('coll',c).eq('id',id);if(r.error)throw r.error;
+    var r=await sb.from('kv').select('id,data').eq('team',T).eq('coll',c).eq('id',id);if(r.error)throw r.error;
     var x=(r.data||[])[0];return dsnap(id,x?x.data:null);
   }
   async function put(c,id,d){
-    var r=await sb.from('kv').insert({coll:c,id:id,data:d});
+    var r=await sb.from('kv').insert({team:T,coll:c,id:id,data:d});
     if(!r.error)return;
     if(r.error.code==='23505'){
-      var u=await sb.from('kv').update({data:d,updated_at:new Date().toISOString()}).eq('coll',c).eq('id',id).select('id');
+      var u=await sb.from('kv').update({data:d,updated_at:new Date().toISOString()}).eq('team',T).eq('coll',c).eq('id',id).select('id');
       if(u.error)throw u.error;
       if(!u.data||!u.data.length)throw new Error('Нет прав на это действие');
       return;
@@ -1268,16 +1441,18 @@ function makeDb(sb){
       get:function(){return getDoc(c,id)},
       set:function(d){return put(c,id,d)},
       update:async function(d){var cur=await getDoc(c,id);return put(c,id,Object.assign({},cur.exists?cur.data():{},d))},
-      delete:async function(){var r=await sb.from('kv').delete().eq('coll',c).eq('id',id);if(r.error)throw r.error},
+      delete:async function(){var r=await sb.from('kv').delete().eq('team',T).eq('coll',c).eq('id',id).select('id');if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('Нет прав на это действие')},
       onSnapshot:function(ok,err){var run=function(){getDoc(c,id).then(ok,err||function(){})};run();live(c,run);return function(){}}
     }},
-    claimTask:async function(id,body){var r=await sb.rpc('claim_task',{task_id:id,body:body});if(r.error)throw r.error;return !!r.data}
+    claimTask:async function(id,body){var r=await sb.rpc('claim_task',{task_id:id,body:body});if(r.error)throw r.error;return !!r.data},
+    listAdd:async function(list,item){var r=await sb.rpc('kv_list_add',{p_id:list,p_item:item});if(r.error)throw r.error},
+    listRemove:async function(list,itemId){var r=await sb.rpc('kv_list_remove',{p_id:list,p_item_id:itemId});if(r.error)throw r.error}
   };
 }
-function makeAssets(sb){
+function makeAssets(sb,T){
   return {upload:async function(file){
     var ext=((file.name||'').split('.').pop()||'webm').replace(/[^a-z0-9]/gi,'').slice(0,5)||'webm';
-    var path=uid+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+ext;
+    var path=T+'/'+uid+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+ext;
     var r=await sb.storage.from('videos').upload(path,file,{contentType:file.type||'video/webm',upsert:false});
     if(r.error)throw new Error(r.error.message||'не удалось загрузить файл');
     return {id:path,url:sb.storage.from('videos').getPublicUrl(path).data.publicUrl};
@@ -1294,17 +1469,63 @@ async function init(){
   if(!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY||!window.supabase){document.body.dataset.gate='auth';showLogin('Сайт ещё не подключён к базе: заполните config.js (см. README).');$('#login-btn').disabled=true;return}
   sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
   if(cfg.GOOGLE_LOGIN)$('#login-google').hidden=false;
-  sb.auth.onAuthStateChange(function(ev,sess){if(ev==='SIGNED_OUT'&&started)location.reload();else if(sess&&!started)start(sess)});
+  sb.auth.onAuthStateChange(function(ev,sess){
+    if(ev==='PASSWORD_RECOVERY')setTimeout(showRecovery,0);
+    if(ev==='SIGNED_OUT'&&started)location.reload();else if(sess&&!started)start(sess)});
   var r=await sb.auth.getSession();
   if(r&&r.data&&r.data.session)start(r.data.session);
   else{document.body.dataset.gate='auth';showLogin()}
 }
+/* ---------- команда ---------- */
+var TEAM_ERR={bad_code:'Такого кода нет. Проверьте его у капитана: 8 символов, например K7QM-2XWD.',already_in_team:'Вы уже состоите в команде. Чтобы перейти в другую, сначала выйдите из текущей на вкладке «Команда».',bad_name:'Название команды: от 2 до 60 символов.',too_many_teams:'С одного аккаунта можно создать не больше 5 команд.',not_allowed:'Это может только капитан или ментор.',not_self:'Себя убрать нельзя: выйдите из команды сами.',not_signed_in:'Сначала войдите.'};
+function rpcErr(e){var t=(e&&e.message)||'ошибка';for(var k in TEAM_ERR){if(t.indexOf(k)>=0)return TEAM_ERR[k]}if(/function .* does not exist|Could not find the function/i.test(t))return 'База не обновлена: администратору нужно выполнить новый schema.sql в Supabase.';return t}
+function teamMsg(t,warn){var m=$('#team-msg');m.className='reg-note'+(warn?' warn':'');m.textContent=t}
+async function loadTeam(){var r=await sb.rpc('team_info');if(r.error)throw r.error;team=r.data&&r.data.id?r.data:null;return team}
+function pendingCode(){var q='';try{q=new URLSearchParams(location.search).get('team')||''}catch(e){}if(q){store.set('fll-join',q)}return q||store.get('fll-join')||''}
+function showTeamGate(){
+  document.body.dataset.gate='team';$('#teamgate').hidden=false;
+  var c=pendingCode();if(c&&!$('#join-code').value)$('#join-code').value=c;
+  if(c)teamMsg('Код из приглашения уже вписан. Нажмите «Вступить».',true);
+}
+$('#f-join').addEventListener('submit',async function(e){
+  e.preventDefault();var c=$('#join-code').value.trim();if(!c||!sb)return;
+  var b=this.querySelector('button');b.disabled=true;teamMsg('Проверяю код…');
+  try{var r=await sb.rpc('join_team',{p_code:c});if(r.error)throw r.error;team=r.data;store.set('fll-join','');enterTeam()}
+  catch(err){teamMsg(rpcErr(err),true)}finally{b.disabled=false}
+});
+$('#f-newteam').addEventListener('submit',async function(e){
+  e.preventDefault();var n=$('#team-name').value.trim();if(!n||!sb)return;
+  var b=this.querySelector('button');b.disabled=true;teamMsg('Создаю команду…');
+  try{var r=await sb.rpc('create_team',{p_name:n});if(r.error)throw r.error;team=r.data;store.set('fll-join','');enterTeam();toast('Команда «'+team.name+'» создана. Код приглашения на вкладке «Команда».')}
+  catch(err){teamMsg(rpcErr(err),true)}finally{b.disabled=false}
+});
+async function exportTeam(){
+  try{
+    var r=await sb.from('kv').select('coll,id,data,updated_at').eq('team',team.id);if(r.error)throw r.error;
+    var dump={app:'fll-shtab',version:2,team:{id:team.id,name:team.name},exportedAt:new Date().toISOString(),rows:r.data||[]};
+    var blob=new Blob([JSON.stringify(dump,null,1)],{type:'application/json'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shtab-'+team.name.replace(/[^\wа-яё-]+/gi,'_')+'-'+todayStr()+'.json';
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+    toast('Копия данных скачана: '+dump.rows.length+' записей. Видео в неё не входят, только ссылки на них.');
+  }catch(e){toast('Не удалось скачать копию: '+((e&&e.message)||'ошибка'))}
+}
 async function start(sess){
   if(started)return;started=true;
   $('#login').hidden=true;document.body.dataset.gate='loading';
-  uid=sess.user.id;db=makeDb(sb);canWrite=true;isAdmin=true;assetsApi=makeAssets(sb);
+  uid=sess.user.id;
+  try{await loadTeam()}
+  catch(e){banner('Не удалось связаться с базой: '+rpcErr(e)+' Обновите страницу.');document.body.dataset.gate='auth';return}
+  if(!team){showTeamGate();return}
+  enterTeam();
+}
+async function enterTeam(){
+  $('#teamgate').hidden=true;document.body.dataset.gate='loading';
+  try{var u=new URL(location.href);if(u.searchParams.has('team')){u.searchParams.delete('team');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
+  $('.tag').textContent=team.name+' · задачи · тренировки · Core Values';
+  $('#team-banner').textContent=team.name;$('#foot-team').textContent=team.name;document.title='Штаб FLL · '+team.name;
+  db=makeDb(sb,team.id);canWrite=true;isAdmin=true;assetsApi=makeAssets(sb,team.id);
   try{var cs=await sb.rpc('can_be_staff');canStaff=!cs.error&&!!cs.data}catch(e){canStaff=false}
-  {var lr=localReg();if(lr&&lr.uid===uid){me={name:lr.name,role:lr.role,ts:0};members[uid]=me;setMe(lr.name);$('#me').value=lr.name}}
+  {var lr=localReg();if(lr){me={name:lr.name,role:lr.role,ts:0};members[uid]=me;setMe(lr.name);$('#me').value=lr.name}}
   setTimeout(function(){gateTimeout=true;renderMe()},8000);
   renderMe();renderCapNote();renderTasks();
   var slow=setTimeout(function(){if(!loaded.tasks)banner('Хранилище отвечает долго. Показаны последние сохранённые данные, они могут быть неактуальны.')},10000);
@@ -1318,36 +1539,39 @@ async function start(sess){
     'settings/missions':function(s){var it=s.exists&&s.data()&&Array.isArray(s.data().items)?s.data().items:[];missions=it.filter(function(m){return m&&m.id&&m.name&&m.per>0&&m.count>0});renderMissions();renderMissionStats()},
     'settings/checklist':function(s){var it=s.exists&&s.data()&&Array.isArray(s.data().items)?s.data().items:[];checklist=it.filter(function(c){return c&&c.id&&c.text});renderChecklist()},
     members:function(s){
-      var cached=!!(s.metadata&&s.metadata.fromCache),m={};
+      /* сюда попадает только ответ сервера на запрос с действующим входом (ошибки сюда не доходят),
+         поэтому ему можно верить: регистрация хранится в базе, а не в браузере */
+      var m={};
       s.docs.forEach(function(d){m[d.id]=Object.assign({},d.data()||{})});
-      var mine=uid?m[uid]||null:null,good=!!(mine&&ROLES[mine.role]&&mine.name);
-      if(cached&&!good&&!gateTimeout)return; /* неподтверждённый пустой ответ не считаем: форму не показываем */
-      members=m;loaded.members=true;
-      var loc=localReg();
-      if(good){me=mine;saveLocalReg(mine)}
-      else if(loc&&uid&&loc.uid===uid&&!cached&&!Object.keys(m).length){
-        /* сервер ответил пустой коллекцией, а мы помним регистрацию: тихо восстанавливаем запись */
-        me={name:loc.name,role:loc.role,ts:Date.now()};members[uid]=me;
-        try{db.doc('members/'+uid).set(me)}catch(e){}
-      }
-      else if(loc&&uid&&loc.uid===uid&&(cached||!loaded.confirmed)&&cached){me={name:loc.name,role:loc.role,ts:Date.now()};members[uid]=me}
-      else{me=null;if(!cached&&loc&&loc.uid===uid)store.set('fll-reg','')} /* подтверждено: записи нет (например, сброшена капитаном) */
-      if(!cached)loaded.confirmed=true;
+      members=m;loaded.members=true;loaded.confirmed=true;
+      var mine=uid?m[uid]||null:null;
+      if(mine&&ROLES[mine.role]&&mine.name){me=mine;saveLocalReg(mine)}
+      else{me=null;store.set('fll-reg','')} /* записи нет: например, регистрацию сбросил капитан */
       if(registered()){setMe(me.name);$('#me').value=me.name}renderMe();renderCapNote();renderTeam();renderTasks()},
     'settings/goal':function(s){var v=s.exists&&s.data()?Number(s.data().score):0;goal=v>0?v:null;if(!goalEditing)renderGoal();renderLog()}
   };
   function ref(k){return k.indexOf('/')>0?db.doc(k):db.collection(k)}
   var gotAny=false;
+  var busy=null;
   refreshAll=function(){
-    return Promise.all(Object.keys(H).map(function(k){
-      return ref(k).get().then(function(s){gotAny=true;H[k](s)}).catch(function(e){if(!gotAny&&(k==='tasks'||k==='runs'))fail(e)});
-    }));
+    if(busy)return busy;
+    busy=(async function(){
+      /* сначала убеждаемся, что вход действует: иначе сервер вернёт пустоту, и интерфейс решит, что данных нет */
+      var ss=null;try{ss=await sb.auth.getSession()}catch(e){}
+      if(!ss||!ss.data||!ss.data.session){banner('Нет связи с сервером или вход устарел. Ваши данные в сохранности: проверьте интернет и обновите страницу.');return}
+      try{var ti=await sb.rpc('team_info');if(!ti.error&&!(ti.data&&ti.data.id)){location.href=location.pathname;return}if(!ti.error&&ti.data.code)team.code=ti.data.code}catch(e){}
+      await Promise.all(Object.keys(H).map(function(k){
+        return ref(k).get().then(function(s){gotAny=true;H[k](s)}).catch(function(e){if(!gotAny&&(k==='tasks'||k==='runs'))fail(e)});
+      }));
+      if(gotAny&&$('#banner').textContent.indexOf('Нет связи')===0)banner('');
+    })().finally(function(){busy=null});
+    return busy;
   };
   Object.keys(H).forEach(function(k){
     try{ref(k).onSnapshot(function(s){gotAny=true;H[k](s)},function(e){console.warn('live update stopped',k,e&&e.code)})}catch(e){}
   });
   refreshAll();
-  setInterval(function(){if(document.visibilityState!=='hidden')refreshAll()},15000);
+  setInterval(function(){if(document.visibilityState!=='hidden')refreshAll()},60000);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')refreshAll()});
 }
 init();
