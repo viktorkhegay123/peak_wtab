@@ -228,8 +228,22 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .stepper button:first-child{border-radius:8px 0 0 8px}.stepper button:last-child{border-radius:0 8px 8px 0}
 .stepper input{width:48px;height:34px;text-align:center;border-radius:0;border-left:0;border-right:0;padding:6px 2px;box-shadow:none}
 .mpts{font-weight:600;min-width:56px;text-align:right}
-.mform{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin-top:14px;align-items:end}
-.mform label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.mis{padding:12px 0;border-bottom:1px solid var(--line)}
+.mis-h{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.mis-h .code{font:600 12px var(--font-body);color:var(--muted);min-width:30px}
+.mis-h b{font-weight:600}
+.mis-h em{font-style:normal;font-size:12px;color:var(--muted)}
+.mis-h .mpts{margin-left:auto}
+.mis-h .mpts.on{color:var(--accent)}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0 4px 38px;font-size:14px}
+.fld span{color:var(--ink2,var(--ink));overflow-wrap:anywhere}
+.mis .note{padding:2px 0 0 38px;font-size:12px;color:var(--muted)}
+.seg{display:inline-flex;flex:none;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{min-width:36px;height:32px;padding:0 10px;border:0;border-left:1px solid var(--line2);background:transparent;color:var(--ink);font:500 14px var(--font-body);cursor:pointer}
+.seg button:first-child{border-left:0}
+.seg button:hover{background:var(--surface2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.calc-src{font-size:12px;color:var(--muted);margin:10px 0 0}
 .savebar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 
 /* чек-лист */
@@ -404,8 +418,8 @@ body:not([data-gate="ok"]) .countdown{display:none}
   .addrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .addrow #t-title,.addrow button{grid-column:1/-1}
   .me{margin-left:0;width:100%}
-  .mform{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .mform label:first-child,.mform button{grid-column:1/-1}
+  .fld{flex-direction:column;align-items:flex-start;padding-left:0}
+  .mis .note{padding-left:0}
 }
 @media (max-width:640px){
   .regform,.loginform{grid-template-columns:minmax(0,1fr)}
@@ -556,21 +570,15 @@ body:not([data-gate="ok"]) .countdown{display:none}
       </div>
       </div>
       <div class="box">
-        <h2>Очки за раунд</h2>
+        <h2>Очки за раунд · BIOGLOW</h2>
         <div class="score-head">
           <div class="total" id="total">0 <small>/ 0</small></div>
           <div>
-            <button class="btn ghost small" id="m-cfg" type="button">Настроить миссии</button>
             <button class="btn ghost small" id="m-reset" type="button">Обнулить</button>
           </div>
         </div>
         <div class="mlist" id="mlist"></div>
-        <form class="mform" id="f-mis" hidden>
-          <label>Название миссии<input id="m-name" maxlength="60" required></label>
-          <label>Очков за единицу<input id="m-per" type="number" min="1" value="10" required></label>
-          <label>Макс. единиц<input id="m-cnt" type="number" min="1" value="1" required></label>
-          <button class="btn" type="submit">Добавить</button>
-        </form>
+        <p class="calc-src">Миссии и очки по Robot Game Rulebook сезона BIOGLOW 2026/27. Сверяйтесь с <a href="https://eventhub.firstinspires.org/scoresheet" target="_blank" rel="noopener">официальным калькулятором</a> и Challenge Updates: правила могут уточняться в течение сезона.</p>
         <div class="savebar"><button class="btn ghost" id="m-fill" type="button">Подставить сумму в запись</button></div>
       </div>
     </div>
@@ -633,7 +641,7 @@ var store={
   set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 };
 var db=null, canWrite=false;
-var tasks=[], runs=[], ev=null, missions=[], pts={};
+var tasks=[], runs=[], ev=null, pts={};
 var loaded={tasks:false,runs:false,confirmed:false};
 var rankRange='all';
 var CV={discovery:['Открытие','исследуем новое'],innovation:['Инновации','творчески решаем задачи'],impact:['Влияние','приносим пользу'],inclusion:['Инклюзивность','уважаем всех'],teamwork:['Командная работа','сильнее вместе'],fun:['Удовольствие','радуемся работе']};
@@ -643,7 +651,7 @@ var ticks={};try{ticks=JSON.parse(store.get('fll-ticks')||'{}')||{}}catch(e){tic
 loaded.cv=false;
 var filter='all', onlyMine=false, myName=store.get('fll-me')||'';
 var editingId=null, pendingRender=false, delArm=null, evEditing=false, cfgOpen=false;
-try{pts=JSON.parse(store.get('fll-pts')||'{}')||{}}catch(e){pts={}}
+try{pts=JSON.parse(store.get('fll-bioglow')||'{}')||{}}catch(e){pts={}}
 
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function plural(n,f){var a=Math.abs(n)%100,b=a%10;if(a>10&&a<20)return f[2];if(b>1&&b<5)return f[1];if(b===1)return f[0];return f[2]}
@@ -780,34 +788,49 @@ function renderTasks(force){
   $('#board').innerHTML=h;
 }
 
-/* ---------- очки ---------- */
-function mMax(m){return m.per*m.count}
-function units(m){var v=Number(pts[m.id])||0;return Math.max(0,Math.min(m.count,v))}
-function totals(){
-  var s=0,mx=0;
-  missions.forEach(function(m){s+=units(m)*m.per;mx+=mMax(m)});
-  return {s:s,mx:mx};
-}
+/* ---------- очки: BIOGLOW 2026/27 ---------- */
+/* поля: yn — да/нет, n — число 0..max, o — варианты. score(v) — очки миссии по правилам RGR */
+var YN=[[0,'Нет'],[1,'Да']];
+function NUM(n){var o=[];for(var i=0;i<=n;i++)o.push([i,String(i)]);return o}
+var PT_PTS=[0,10,15,25,35,50,50];
+var SEASON=[
+ {id:'ei',code:'EI',name:'Проверка снаряжения',en:'Equipment Inspection',max:20,f:[['ei','Всё снаряжение в одной зоне запуска и ниже 305 мм',YN]],score:function(v){return v.ei?20:0}},
+ {id:'pt',code:'PT',name:'Жетоны точности',en:'Precision Tokens',max:50,f:[['pt','Сколько жетонов осталось',NUM(6),6]],note:'Минус жетон за каждое прерывание робота вне базы.',score:function(v){return PT_PTS[v.pt]||0}},
+ {id:'m01',code:'M01',name:'Облёт дрона',en:'Drone Survey',max:30,f:[['m01a','Дрон не касается поля',YN],['m01b','Бонус: карта LiDAR перевёрнута, метка в зоне съёмки',YN]],score:function(v){return v.m01a?20+(v.m01b?10:0):0}},
+ {id:'m02',code:'M02',name:'Взрывные семена',en:'Exploding Seeds',max:30,f:[['m02','Семян не касается стебля',NUM(3)]],score:function(v){return 10*v.m02}},
+ {id:'m03',code:'M03',name:'Переверни камень',en:'Flip the Rock',max:30,f:[['m03a','Флаг исследователей опущен',YN],['m03b','Бонус: камень вернули в исходное положение',YN]],score:function(v){return v.m03a?20+(v.m03b?10:0):0}},
+ {id:'m04',code:'M04',name:'Счастливые листья',en:'Lucky Leaves',max:30,f:[['m04a','Листьев не касается гнезда',NUM(2)],['m04b','Кузнечик хотя бы частично в зоне листьев',YN],['m04c','Бонус: кузнечик на исходном месте и весь матч оставался в зоне',YN]],note:'Если кузнечик в конце вне зоны листьев, за миссию 0. Бонус +20 за второй лист.',score:function(v){if(!v.m04b)return 0;return (v.m04a>=1?10:0)+(v.m04a>=2&&v.m04c?20:0)}},
+ {id:'m05',code:'M05',name:'Тянущиеся корни',en:'Reaching Roots',max:20,f:[['m05','Корень растения выдвинут',[[0,'Нет'],[1,'Частично'],[2,'Полностью']]]],score:function(v){return [0,10,20][v.m05]||0}},
+ {id:'m06',code:'M06',name:'Муравьи-листорезы',en:'Leafcutter Frenzy',max:40,f:[['m06a','Муравей касается гнезда',YN],['m06b','Фрагментов листьев в гнезде',NUM(4)]],score:function(v){return v.m06a?10*v.m06b:0}},
+ {id:'m07',code:'M07',name:'Гигантский гриб',en:'Humongous Fungus',max:40,f:[['m07a','Мицелий полностью выдвинут',YN],['m07b','Бонус: связей с выдвинутым корнем соперника',NUM(2)]],score:function(v){return v.m07a?20+10*v.m07b:0}},
+ {id:'m08',code:'M08',name:'Запутанные лианы',en:'Tangled',max:30,f:[['m08','Лиана касается поля',YN]],score:function(v){return v.m08?30:0}},
+ {id:'m09',code:'M09',name:'Исследовательская платформа',en:'Research Platform',max:30,f:[['m09a','Платформа поднята',YN],['m09b','Фотоловушка установлена',YN],['m09c','Семя не касается дерева',YN]],score:function(v){return 10*(v.m09a+v.m09b+v.m09c)}},
+ {id:'m10',code:'M10',name:'Хрупкие микрообитания',en:'Fragile Microhabitats',max:20,f:[['m10a','Домик паука на исходном месте',YN],['m10b','Домик улитки на исходном месте',YN]],score:function(v){return 10*(v.m10a+v.m10b)}},
+ {id:'m11',code:'M11',name:'Окно в прошлое',en:'Window to the Past',max:20,f:[['m11','Крышка корней опущена и касается поля',YN]],score:function(v){return v.m11?20:0}},
+ {id:'m12',code:'M12',name:'Старейшина леса',en:'Forest Elder',max:30,f:[['m12a','Трость полностью поднята и касается дерева',YN],['m12b','Стяжка вокруг столба',YN]],score:function(v){return (v.m12a?20:0)+(v.m12b?10:0)}},
+ {id:'m13',code:'M13',name:'Ключевой вид',en:'Keystone Species',max:30,f:[['m13','Ваш ключевой вид на платформе, молодые деревья подняты',YN]],score:function(v){return v.m13?30:0}},
+ {id:'m14',code:'M14',name:'Семена обновления',en:'Seeds of Renewal',max:40,f:[['m14a','Семян в станции пересадки',NUM(4)],['m14b','Бонус: из них касаются поля',NUM(4)]],score:function(v){return 5*v.m14a+5*Math.min(v.m14a,v.m14b)}},
+ {id:'m15',code:'M15',name:'Биоцентричная архитектура',en:'Biocentric Architecture',max:40,f:[['m15a','Гнездовой навес поднят',YN],['m15b','Окно сада полностью внутри',YN],['m15c','Люк компоста открыт и касается поля',YN],['m15d','Док, где стоит модель',[[1,'Шахта'],[2,'Город'],[3,'Ферма']],1]],note:'Экобонус +10: шахта — навес, город — окно сада, ферма — компост.',score:function(v){var p=10*(v.m15a+v.m15b+v.m15c);var need=[0,v.m15a,v.m15b,v.m15c][v.m15d];return p+(need?10:0)}}
+];
+var missions=SEASON;
+function fval(k){var d=0;SEASON.forEach(function(m){m.f.forEach(function(f){if(f[0]===k&&f[3]!=null)d=f[3]})});var x=pts[k];return x==null?d:Number(x)||0}
+function vals(){var v={};SEASON.forEach(function(m){m.f.forEach(function(f){v[f[0]]=fval(f[0])})});return v}
+function mScore(m,v){return m.score(v||vals())}
+function mMax(m){return m.max}
+function totals(){var v=vals(),s=0,mx=0;SEASON.forEach(function(m){s+=mScore(m,v);mx+=m.max});return {s:s,mx:mx}}
 function updateTotal(){
-  var t=totals();
+  var t=totals(),v=vals();
   $('#total').innerHTML=t.s+' <small>/ '+t.mx+'</small>';
-  missions.forEach(function(m){
-    var p=document.getElementById('mp-'+m.id);if(p)p.textContent=units(m)*m.per;
-  });
-  store.set('fll-pts',JSON.stringify(pts));
+  SEASON.forEach(function(m){var p=document.getElementById('mp-'+m.id);if(p){var sc=mScore(m,v);p.textContent=sc;p.classList.toggle('on',sc>0)}});
+  document.querySelectorAll('#mlist .seg button').forEach(function(b){b.setAttribute('aria-pressed',String(fval(b.dataset.k)===Number(b.dataset.v)))});
+  store.set('fll-bioglow',JSON.stringify(pts));
 }
 function renderMissions(){
-  var box=$('#mlist');
-  if(!missions.length){
-    box.innerHTML='<div class="empty">Список миссий пуст. Нажмите «Настроить миссии» и внесите миссии этого сезона из правил: название, очки за единицу и сколько единиц можно набрать. Тогда калькулятор будет считать раунд.</div>';
-  }else{
-    box.innerHTML=missions.map(function(m){
-      var id=esc(m.id);
-      return '<div class="mrow"><label for="mi-'+id+'">'+esc(m.name)+'</label><div class="stepper"><button type="button" data-act="dec" data-id="'+id+'" aria-label="Минус">−</button><input id="mi-'+id+'" data-id="'+id+'" type="number" inputmode="numeric" min="0" max="'+m.count+'" value="'+units(m)+'"><button type="button" data-act="inc" data-id="'+id+'" aria-label="Плюс">+</button></div><span class="mpts" id="mp-'+id+'">'+units(m)*m.per+'</span><span class="sub">по '+m.per+' · до '+m.count+' · макс. '+mMax(m)+(cfgOpen?' · <button class="linkbtn" type="button" data-act="rm-mission" data-id="'+id+'">убрать</button>':'')+'</span></div>';
-    }).join('');
-  }
-  $('#f-mis').hidden=!cfgOpen;
-  $('#m-cfg').textContent=cfgOpen?'Готово':'Настроить миссии';
+  $('#mlist').innerHTML=SEASON.map(function(m){
+    return '<div class="mis"><div class="mis-h"><span class="code">'+m.code+'</span><b>'+m.name+'</b><em>'+m.en+'</em><span class="mpts" id="mp-'+m.id+'">0</span></div>'+
+      m.f.map(function(f){return '<div class="fld"><span>'+f[1]+'</span><div class="seg" role="group" aria-label="'+esc(f[1])+'">'+f[2].map(function(o){return '<button type="button" data-act="mval" data-k="'+f[0]+'" data-v="'+o[0]+'" aria-pressed="false">'+o[1]+'</button>'}).join('')+'</div></div>'}).join('')+
+      (m.note?'<div class="note">'+m.note+'</div>':'')+'</div>';
+  }).join('');
   updateTotal();
 }
 
@@ -912,19 +935,18 @@ function renderGoal(){
 function renderMissionStats(){
   var el=$('#mstats');
   var withB=runs.filter(function(r){return r.missions&&typeof r.missions==='object'});
-  if(!missions.length){el.innerHTML='<p class="empty-sm">Добавьте миссии в калькулятор «Очки за раунд» выше.</p>';return}
   if(!withB.length){el.innerHTML='<p class="empty-sm">Пока нет заездов с разбором по миссиям. Отмечайте миссии в калькуляторе, нажимайте «Подставить сумму в запись» и записывайте заезд. Тогда здесь будет видно, какие миссии робот выполняет стабильно, а какие проваливает.</p>';return}
   var st=missions.map(function(m){
     var tried=withB.filter(function(r){return m.id in r.missions});
     var ok=tried.filter(function(r){return Number(r.missions[m.id])>0}).length;
-    var sum=tried.reduce(function(a,r){return a+Math.min(m.count,Number(r.missions[m.id])||0)*m.per},0);
+    var sum=tried.reduce(function(a,r){return a+Math.min(m.max,Number(r.missions[m.id])||0)},0);
     return {m:m,n:tried.length,ok:ok,rate:tried.length?ok/tried.length:0,avg:tried.length?sum/tried.length:0};
   }).filter(function(x){return x.n});
   st.sort(function(a,b){return a.rate-b.rate||(a.avg/mMax(a.m))-(b.avg/mMax(b.m))});
   el.innerHTML=st.map(function(x,i){
     var p=Math.round(x.rate*100),z=p<50?'z-red':(p<80?'z-yel':'z-grn');
     var lost=Math.round(mMax(x.m)-x.avg);
-    return '<div class="mstat '+z+'"><b>'+esc(x.m.name)+(i===0&&p<80?'<span class="weak">слабое место</span>':'')+'</b><span class="pct">'+p+'%</span><div class="rbar"><i style="width:'+p+'%"></i></div><div class="rsub">выполнена в '+x.ok+' из '+x.n+' · в среднем '+Math.round(x.avg)+' из '+mMax(x.m)+(lost>0?' · теряем ~'+lost:'')+'</div></div>';
+    return '<div class="mstat '+z+'"><b>'+x.m.code+' · '+esc(x.m.name)+(i===0&&p<80?'<span class="weak">слабое место</span>':'')+'</b><span class="pct">'+p+'%</span><div class="rbar"><i style="width:'+p+'%"></i></div><div class="rsub">выполнена в '+x.ok+' из '+x.n+' · в среднем '+Math.round(x.avg)+' из '+mMax(x.m)+(lost>0?' · теряем ~'+lost:'')+'</div></div>';
   }).join('')||'<p class="empty-sm">Нет данных по текущим миссиям.</p>';
 }
 
@@ -1190,14 +1212,7 @@ document.addEventListener('click',function(e){
     if(delArm!==id){armDelete(id);return}
     if(!guardStaff())return;delArm=null;
     safe(function(){return db.doc('tasks/'+id).delete()});if(tstat[id])safe(function(){return db.doc('tstatus/'+id).delete()});return}
-  if(act==='inc'||act==='dec'){
-    var m=missions.find(function(x){return x.id===id});if(!m)return;
-    pts[id]=Math.max(0,Math.min(m.count,units(m)+(act==='inc'?1:-1)));
-    var inp=document.getElementById('mi-'+id);if(inp)inp.value=pts[id];updateTotal();return}
-  if(act==='rm-mission'){
-    if(!guard())return;
-    missions=missions.filter(function(x){return x.id!==id});renderMissions();
-    safe(function(){return db.listRemove('missions',id)});return}
+  if(act==='mval'){pts[b.dataset.k]=Number(b.dataset.v);updateTotal();return}
   if(act==='run-del'){
     var key='r:'+id;
     if(delArm!==key){armDelete(key);return}
@@ -1258,15 +1273,6 @@ document.addEventListener('submit',function(e){
     cvList.push(Object.assign({id:'tmp'+Date.now()},cr));loaded.cv=true;renderCV();
     safe(function(){return db.collection('cv').add(cr)});$('#cv-text').value='';toast('Запись сохранена');
   }
-  if(f==='f-mis'){
-    if(!guard())return;
-    var name=$('#m-name').value.trim();var per=Math.max(1,parseInt($('#m-per').value,10)||0);var cnt=Math.max(1,parseInt($('#m-cnt').value,10)||0);
-    if(!name)return;
-    var mi={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,per:per,count:cnt};
-    missions=missions.concat([mi]);renderMissions();
-    safe(function(){return db.listAdd('missions',mi)});
-    $('#m-name').value='';$('#m-cnt').value='1';$('#m-name').focus();
-  }
 
 });
 
@@ -1274,10 +1280,6 @@ document.addEventListener('input',function(e){
   var t=e.target;
   if(t.id==='me'){setMe(t.value);return}
   if(t.id==='q-score'){var qv=parseInt(t.value,10);t.className='q-score'+(isNaN(qv)||qv<0?'':' '+band(qv));return}
-  if(t.dataset&&t.dataset.id&&t.id&&t.id.indexOf('mi-')===0){
-    var m=missions.find(function(x){return x.id===t.dataset.id});if(!m)return;
-    var v=parseInt(t.value,10);pts[m.id]=isNaN(v)?0:Math.max(0,Math.min(m.count,v));updateTotal();
-  }
 });
 document.addEventListener('change',function(e){
   if(e.target.id==='reg-role'){regArm=null;renderRegBtn();return}
@@ -1293,7 +1295,6 @@ document.addEventListener('change',function(e){
   if(e.target.id==='only-mine'){onlyMine=e.target.checked;if(onlyMine&&!myName)toast('Впишите своё имя справа, чтобы видеть свои задачи');renderTasks()}
   if(e.target.id==='me'){renderTasks()}
 });
-$('#m-cfg').addEventListener('click',function(){cfgOpen=!cfgOpen;renderMissions()});
 $('#m-reset').addEventListener('click',function(){pts={};renderMissions()});
 $('#q-save').addEventListener('click',function(){
   var sc=parseInt($('#q-score').value,10);
@@ -1302,7 +1303,7 @@ $('#q-save').addEventListener('click',function(){
   /* заезд — работа всей команды, поэтому без «кто вёл» */
   var rec={ts:Date.now(),score:sc,note:$('#q-note').value.trim(),uid:uid};
   var tt=totals();
-  if(missions.length&&tt.s===sc&&sc>0){rec.missions={};missions.forEach(function(m){rec.missions[m.id]=units(m)})}
+  if(tt.s===sc&&sc>0){var vv=vals();rec.missions={};SEASON.forEach(function(m){rec.missions[m.id]=mScore(m,vv)})}
   if(checklist.length)rec.checklist=chkDone()+'/'+checklist.length;
   var file=$('#q-video').files[0],link=$('#q-link').value.trim();
   if(link&&!okLink(link)){toast('Ссылка должна начинаться с http:// или https://');return}
@@ -1579,7 +1580,6 @@ async function enterTeam(){
     runs:function(s){loaded.runs=true;runs=s.docs.map(function(d){return Object.assign({},d.data()||{},{id:d.id})}).filter(function(r){return typeof r.score==='number'&&r.ts});renderLog()},
     cv:function(s){loaded.cv=true;cvList=s.docs.map(function(d){return Object.assign({},d.data()||{},{id:d.id})}).filter(function(c){return c.text&&c.ts});renderCV()},
     'settings/event':function(s){ev=s.exists?s.data():null;if(!evEditing)renderCountdown()},
-    'settings/missions':function(s){var it=s.exists&&s.data()&&Array.isArray(s.data().items)?s.data().items:[];missions=it.filter(function(m){return m&&m.id&&m.name&&m.per>0&&m.count>0});renderMissions();renderMissionStats()},
     'settings/checklist':function(s){var it=s.exists&&s.data()&&Array.isArray(s.data().items)?s.data().items:[];checklist=it.filter(function(c){return c&&c.id&&c.text});renderChecklist()},
     members:function(s){
       /* сюда попадает только ответ сервера на запрос с действующим входом (ошибки сюда не доходят),
